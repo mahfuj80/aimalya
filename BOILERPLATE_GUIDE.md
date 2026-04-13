@@ -10,6 +10,18 @@ This repository is intended to be used as a reusable NestJS enterprise boilerpla
 - Docker and Docker Compose files
 - Environment template file
 
+## Required baseline files for every new project
+
+When reusing this boilerplate, always update these first:
+
+- `.env.example`
+- `package.json`
+- `Dockerfile`
+- `docker-compose.yml`
+- `src/config/env.validation.ts`
+- `src/main.ts`
+- `src/app.module.ts`
+
 ## Docker status
 
 The Docker setup is a good starting point.
@@ -39,6 +51,7 @@ Use this every time you reuse the boilerplate.
 - Pin database and Redis image tags.
 - Keep `package-lock.json` committed.
 - Update dependencies through controlled upgrade steps, not random changes.
+- Keep framework and infra versions documented in this file.
 
 ### 2. Upgrade workflow
 
@@ -68,6 +81,7 @@ Recommended order:
 - Migration and seed flow still works
 - Health checks still pass
 - RBAC and authentication behavior still match expectations
+- `.env.example` still matches `src/config/env.validation.ts`
 
 ## Reuse checklist
 
@@ -79,6 +93,7 @@ Before starting a new project from this boilerplate:
 - Add or remove modules based on project scope
 - Replace starter sample entities and controllers with business-specific ones
 - Add real Prisma schema and migrations
+- Verify the required env keys still match the app bootstrap validation
 
 ## Recommendation
 

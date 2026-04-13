@@ -1,4 +1,10 @@
-const requiredEnv = ['NODE_ENV'] as const;
+const requiredEnv = [
+  'NODE_ENV',
+  'PORT',
+  'DATABASE_URL',
+  'JWT_ACCESS_SECRET',
+  'JWT_REFRESH_SECRET',
+] as const;
 
 export const validateEnv = (): void => {
   const missing = requiredEnv.filter((name) => !process.env[name]);
