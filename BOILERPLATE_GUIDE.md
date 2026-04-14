@@ -41,6 +41,24 @@ What still needs improvement before I would call it fully production-ready:
 - Add version pinning policy for Node, PostgreSQL, Redis, and NestJS dependencies
 - Add startup checks for env vars and DB connectivity
 
+## Nest Devtools local usage
+
+This boilerplate is configured to support local Nest Devtools visualization.
+
+Rules:
+
+- `snapshot: true` is enabled in `src/main.ts` for local graph introspection.
+- `DevtoolsModule.register({ http: process.env.NODE_ENV !== 'production' })` is used in `src/app.module.ts`.
+- Do not enable Devtools HTTP in production.
+- Keep Devtools usage as a development-only diagnostic tool.
+
+Local workflow:
+
+1. Start the app with `NODE_ENV=development`.
+2. Run `npm run start:dev` or `npm run start:debug`.
+3. Open the Nest Devtools URL shown by the integration.
+4. Inspect the application graph and module relationships.
+
 ## Version management policy
 
 Use this every time you reuse the boilerplate.
