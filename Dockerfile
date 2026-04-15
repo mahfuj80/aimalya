@@ -1,5 +1,5 @@
-# Build stage
-FROM node:22-alpine AS builder
+# Development stage
+FROM node:22-alpine AS development
 
 WORKDIR /app
 
@@ -11,6 +11,17 @@ RUN npm ci
 
 # Copy source code
 COPY . .
+
+# Generate Prisma client for compile/runtime types
+RUN npx prisma generate
+
+# Build stage
+FROM development AS builder
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
 
 # Build the application
 RUN npm run build
@@ -33,6 +44,9 @@ COPY package*.json ./
 # Install production dependencies only
 RUN npm ci --omit=dev && \
     npm cache clean --force
+
+# Copy generated Prisma artifacts from builder stage
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
 # Copy built application from builder
 COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist

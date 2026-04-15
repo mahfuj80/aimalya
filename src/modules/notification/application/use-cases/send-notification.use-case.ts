@@ -6,6 +6,8 @@ type SendNotificationInput = {
   title: string;
   message: string;
   channel: 'IN_APP' | 'EMAIL' | 'SMS';
+  email?: string;
+  phoneNumber?: string;
 };
 
 @Injectable()
@@ -19,6 +21,8 @@ export class SendNotificationUseCase {
       userId: input.userId,
       title: input.title,
       message: input.message,
+      email: input.email,
+      phoneNumber: input.phoneNumber,
     });
 
     return { success: true };

@@ -1,12 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
+import { SendNotificationRequestDto } from '../../application/dto/send-notification.request.dto';
 import { SendNotificationUseCase } from '../../application/use-cases/send-notification.use-case';
-
-class SendNotificationRequestDto {
-  userId!: string;
-  title!: string;
-  message!: string;
-  channel!: 'IN_APP' | 'EMAIL' | 'SMS';
-}
 
 @Controller('notifications')
 export class NotificationController {
