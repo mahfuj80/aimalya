@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
+import { StringValue } from 'ms';
 import { UserRole } from '../../../../core/enums/role.enum';
 
 type TokenInput = {
@@ -25,7 +26,8 @@ export class TokenService {
       roles: input.roles,
     };
     const secret = process.env.JWT_ACCESS_SECRET ?? '';
-    const expiresIn = process.env.JWT_ACCESS_EXPIRES_IN ?? '15m';
+    const expiresIn = (process.env.JWT_ACCESS_EXPIRES_IN ??
+      '15m') as StringValue;
     const options: JwtSignOptions = {
       secret,
       expiresIn,
@@ -41,7 +43,8 @@ export class TokenService {
       roles: input.roles,
     };
     const secret = process.env.JWT_REFRESH_SECRET ?? '';
-    const expiresIn = process.env.JWT_REFRESH_EXPIRES_IN ?? '7d';
+    const expiresIn = (process.env.JWT_REFRESH_EXPIRES_IN ??
+      '7d') as StringValue;
     const options: JwtSignOptions = {
       secret,
       expiresIn,
