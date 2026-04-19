@@ -1,6 +1,7 @@
 import {
   INestApplication,
   Injectable,
+  Logger,
   OnModuleDestroy,
   OnModuleInit,
 } from '@nestjs/common';
@@ -16,6 +17,7 @@ type PrismaClientLike = {
 
 @Injectable()
 export class PrismaService implements OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger(PrismaService.name);
   private readonly prisma: PrismaClientLike;
 
   constructor() {
@@ -46,8 +48,17 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   }
 
   enableShutdownHooks(app: INestApplication): void {
-    this.prisma.$on('beforeExit', async () => {
+    const shutdown = async (signal: string) => {
+      this.logger.log(`Received ${signal}, closing Nest application...`);
       await app.close();
+    };
+
+    process.once('SIGINT', () => {
+      void shutdown('SIGINT');
+    });
+
+    process.once('SIGTERM', () => {
+      void shutdown('SIGTERM');
     });
   }
 }
