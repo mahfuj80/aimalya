@@ -10,8 +10,8 @@ describe('SendPasswordResetEmailUseCase', () => {
     const useCase = new SendPasswordResetEmailUseCase(mailSender);
     const result = await useCase.execute({
       email: 'user@mail.com',
-      resetToken: 'token-123',
-      resetUrl: 'https://example.com/reset',
+      otpCode: '123456',
+      expiryMinutes: 10,
     });
 
     expect(result.success).toBe(true);
@@ -28,8 +28,8 @@ describe('SendPasswordResetEmailUseCase', () => {
     await expect(
       useCase.execute({
         email: 'user@mail.com',
-        resetToken: 'token-123',
-        resetUrl: 'https://example.com/reset',
+        otpCode: '123456',
+        expiryMinutes: 10,
       }),
     ).rejects.toThrow('mail unavailable');
   });

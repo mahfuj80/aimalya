@@ -26,6 +26,8 @@ export class PrismaAuthUserRepository implements IAuthUserRepository {
       toDomainRoles(user.roles),
       user.isActive,
       user.refreshTokenHash,
+      user.passwordResetCodeHash,
+      user.passwordResetCodeExpiresAt,
     );
   }
 
@@ -43,6 +45,8 @@ export class PrismaAuthUserRepository implements IAuthUserRepository {
       toDomainRoles(user.roles),
       user.isActive,
       user.refreshTokenHash,
+      user.passwordResetCodeHash,
+      user.passwordResetCodeExpiresAt,
     );
   }
 
@@ -66,6 +70,8 @@ export class PrismaAuthUserRepository implements IAuthUserRepository {
       toDomainRoles(created.roles),
       created.isActive,
       created.refreshTokenHash,
+      created.passwordResetCodeHash,
+      created.passwordResetCodeExpiresAt,
     );
   }
 
@@ -76,6 +82,39 @@ export class PrismaAuthUserRepository implements IAuthUserRepository {
     await this.prisma.user.update({
       where: { id: userId },
       data: { refreshTokenHash },
+    });
+  }
+
+  async updatePasswordHash(userId: string, passwordHash: string): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        passwordHash,
+      },
+    });
+  }
+
+  async setPasswordResetCode(
+    userId: string,
+    codeHash: string,
+    expiresAt: Date,
+  ): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        passwordResetCodeHash: codeHash,
+        passwordResetCodeExpiresAt: expiresAt,
+      },
+    });
+  }
+
+  async clearPasswordResetCode(userId: string): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        passwordResetCodeHash: null,
+        passwordResetCodeExpiresAt: null,
+      },
     });
   }
 }

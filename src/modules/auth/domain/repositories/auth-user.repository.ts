@@ -14,4 +14,11 @@ export interface IAuthUserRepository {
     userId: string,
     refreshTokenHash: string | null,
   ): Promise<void>;
+  updatePasswordHash(userId: string, passwordHash: string): Promise<void>;
+  setPasswordResetCode(
+    userId: string,
+    codeHash: string,
+    expiresAt: Date,
+  ): Promise<void>;
+  clearPasswordResetCode(userId: string): Promise<void>;
 }

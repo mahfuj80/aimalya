@@ -6,24 +6,10 @@ import type { IAuthMailSender } from '../interfaces/mail-sender.port';
 
 export type SendPasswordResetEmailInput = {
   email: string;
-  resetToken: string;
-  resetUrl: string;
+  otpCode: string;
+  expiryMinutes: number;
 };
 
-/**
- * Example Use-Case: SendPasswordResetEmailUseCase
- *
- * Demonstrates how to use an outbound mail port in application use-cases.
- *
- * This use-case would be injected into auth controllers/services
- * to send password reset emails when users request email verification.
- *
- * Pattern:
- * 1. Receive email address and token from controller
- * 2. Compose email payload
- * 3. Delegate to MailService infra adapter
- * 4. Return success/error
- */
 @Injectable()
 export class SendPasswordResetEmailUseCase {
   private readonly logger = new Logger(SendPasswordResetEmailUseCase.name);
@@ -42,19 +28,16 @@ export class SendPasswordResetEmailUseCase {
     const html = `
       <h1>Password Reset Request</h1>
       <p>You requested a password reset for your Aimalya account.</p>
-      <p>
-        <a href="${input.resetUrl}?token=${input.resetToken}">
-          Click here to reset your password
-        </a>
-      </p>
-      <p>This link expires in 1 hour.</p>
+      <p>Your verification code is:</p>
+      <h2 style="letter-spacing: 0.4rem;">${input.otpCode}</h2>
+      <p>This code expires in ${input.expiryMinutes} minutes.</p>
       <p>If you didn't request this, please ignore this email.</p>
     `;
 
     const text = `
       Password reset requested.
-      Visit: ${input.resetUrl}?token=${input.resetToken}
-      Link expires in 1 hour.
+      Your verification code is: ${input.otpCode}
+      This code expires in ${input.expiryMinutes} minutes.
     `;
 
     try {
