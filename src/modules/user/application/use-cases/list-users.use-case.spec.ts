@@ -13,6 +13,7 @@ describe('ListUsersUseCase', () => {
           new UserEntity('u1', 'u1@mail.com', [UserRole.USER], true),
           new UserEntity('u2', 'u2@mail.com', [UserRole.ADMIN], true),
         ]),
+      updateProfile: jest.fn(),
     };
 
     const useCase = new ListUsersUseCase(repo);

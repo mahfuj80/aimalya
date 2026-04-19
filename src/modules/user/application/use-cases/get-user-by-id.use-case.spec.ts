@@ -13,6 +13,7 @@ describe('GetUserByIdUseCase', () => {
           new UserEntity('u1', 'u1@mail.com', [UserRole.USER], true),
         ),
       findAll: jest.fn(),
+      updateProfile: jest.fn(),
     };
 
     const useCase = new GetUserByIdUseCase(repo);
@@ -25,6 +26,7 @@ describe('GetUserByIdUseCase', () => {
     const repo: IUserRepository = {
       findById: jest.fn().mockResolvedValue(null),
       findAll: jest.fn(),
+      updateProfile: jest.fn(),
     };
 
     const useCase = new GetUserByIdUseCase(repo);

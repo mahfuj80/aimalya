@@ -20,6 +20,26 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PrismaService.name);
   private readonly prisma: PrismaClientLike;
 
+  private normalizeConnectionString(connectionString: string): string {
+    try {
+      const parsed = new URL(connectionString);
+      const shouldUseLocalhost =
+        process.platform === 'win32' && parsed.hostname === 'db';
+
+      if (shouldUseLocalhost) {
+        parsed.hostname = 'localhost';
+        this.logger.warn(
+          'DATABASE_URL host "db" detected on Windows host; using "localhost" for Prisma connection.',
+        );
+        return parsed.toString();
+      }
+
+      return connectionString;
+    } catch {
+      return connectionString;
+    }
+  }
+
   constructor() {
     const connectionString = process.env.DATABASE_URL;
 
@@ -27,8 +47,11 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
       throw new Error('DATABASE_URL environment variable is required');
     }
 
+    const resolvedConnectionString =
+      this.normalizeConnectionString(connectionString);
+
     const client = new PrismaClient({
-      adapter: new PrismaPg({ connectionString }),
+      adapter: new PrismaPg({ connectionString: resolvedConnectionString }),
     }) as unknown as PrismaClientLike;
     this.prisma = client;
   }

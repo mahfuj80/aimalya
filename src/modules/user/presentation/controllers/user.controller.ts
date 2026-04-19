@@ -1,5 +1,14 @@
-import { Controller, Get, Param } from '@nestjs/common';
 import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
@@ -9,6 +18,18 @@ import { ListUsersUseCase } from '../../application/use-cases/list-users.use-cas
 import { GetUserByIdUseCase } from '../../application/use-cases/get-user-by-id.use-case';
 import { UserDtoMapper } from '../../application/mappers/user-dto.mapper';
 import { UserResponseDto } from '../../application/dto/user.response.dto';
+import { JwtAuthGuard } from '../../../auth/infrastructure/services/jwt-auth.guard';
+import { UpdateProfileRequestDto } from '../../application/dto/update-profile.request.dto';
+import { UpdateUserProfileUseCase } from '../../application/use-cases/update-user-profile.use-case';
+import { UserRole } from '../../../../core/enums/role.enum';
+
+type AuthenticatedRequest = {
+  user: {
+    id: string;
+    email: string;
+    roles: UserRole[];
+  };
+};
 
 @ApiTags('Users')
 @Controller('users')
@@ -16,6 +37,7 @@ export class UserController {
   constructor(
     private readonly listUsersUseCase: ListUsersUseCase,
     private readonly getUserByIdUseCase: GetUserByIdUseCase,
+    private readonly updateUserProfileUseCase: UpdateUserProfileUseCase,
   ) {}
 
   @Get()
@@ -32,6 +54,23 @@ export class UserController {
   @ApiOkResponse({ type: UserResponseDto })
   async findById(@Param('id') id: string): Promise<UserResponseDto> {
     const user = await this.getUserByIdUseCase.execute(id);
+    return UserDtoMapper.toResponse(user);
+  }
+
+  @Patch('profile')
+  @ApiOperation({ summary: 'Update authenticated user profile' })
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: UserResponseDto })
+  @UseGuards(JwtAuthGuard)
+  async updateProfile(
+    @Req() request: AuthenticatedRequest,
+    @Body() dto: UpdateProfileRequestDto,
+  ): Promise<UserResponseDto> {
+    const user = await this.updateUserProfileUseCase.execute(
+      request.user.id,
+      dto.email,
+    );
+
     return UserDtoMapper.toResponse(user);
   }
 }

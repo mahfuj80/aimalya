@@ -44,4 +44,26 @@ export class PrismaUserRepository implements IUserRepository {
         ),
     );
   }
+
+  async updateProfile(id: string, email: string): Promise<UserEntity | null> {
+    const existing = await this.prisma.user.findUnique({ where: { id } });
+
+    if (!existing) {
+      return null;
+    }
+
+    const updated = await this.prisma.user.update({
+      where: { id },
+      data: {
+        email,
+      },
+    });
+
+    return new UserEntity(
+      updated.id,
+      updated.email,
+      toDomainRoles(updated.roles),
+      updated.isActive,
+    );
+  }
 }
