@@ -1,4 +1,11 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Roles } from '../../../../common/decorators/roles.decorator';
 import { RolesGuard } from '../../../../common/guards/roles.guard';
 import { UserRole } from '../../../../core/enums/role.enum';
@@ -25,6 +32,7 @@ type AuthenticatedRequest = {
   };
 };
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -37,21 +45,33 @@ export class AuthController {
   ) {}
 
   @Post('register')
+  @ApiOperation({ summary: 'Register a new user' })
+  @ApiCreatedResponse({ type: AuthTokensResponseDto })
   register(@Body() dto: RegisterRequestDto): Promise<AuthTokensResponseDto> {
     return this.registerUseCase.execute(dto);
   }
 
   @Post('login')
+  @ApiOperation({ summary: 'Login user with email and password' })
+  @ApiOkResponse({ type: AuthTokensResponseDto })
   login(@Body() dto: LoginRequestDto): Promise<AuthTokensResponseDto> {
     return this.loginUseCase.execute(dto);
   }
 
   @Post('refresh')
+  @ApiOperation({ summary: 'Refresh access token using refresh token' })
+  @ApiOkResponse({ type: AuthTokensResponseDto })
   refresh(@Body() dto: RefreshTokenRequestDto): Promise<AuthTokensResponseDto> {
     return this.refreshTokenUseCase.execute(dto.refreshToken);
   }
 
   @Post('password/forgot/request')
+  @ApiOperation({ summary: 'Request forgot-password OTP over email' })
+  @ApiOkResponse({
+    schema: {
+      example: { success: true },
+    },
+  })
   requestForgotPassword(
     @Body() dto: ForgotPasswordRequestDto,
   ): Promise<{ success: boolean }> {
@@ -59,6 +79,12 @@ export class AuthController {
   }
 
   @Post('password/forgot/reset')
+  @ApiOperation({ summary: 'Reset forgotten password using 6-digit OTP' })
+  @ApiOkResponse({
+    schema: {
+      example: { success: true },
+    },
+  })
   resetForgottenPassword(
     @Body() dto: ResetForgottenPasswordRequestDto,
   ): Promise<{ success: boolean }> {
@@ -70,6 +96,13 @@ export class AuthController {
   }
 
   @Post('password/change')
+  @ApiOperation({ summary: 'Change password for authenticated user' })
+  @ApiBearerAuth()
+  @ApiOkResponse({
+    schema: {
+      example: { success: true },
+    },
+  })
   @UseGuards(JwtAuthGuard)
   changePassword(
     @Req() request: AuthenticatedRequest,
@@ -83,6 +116,17 @@ export class AuthController {
   }
 
   @Get('profile')
+  @ApiOperation({ summary: 'Get authenticated user profile' })
+  @ApiBearerAuth()
+  @ApiOkResponse({
+    schema: {
+      example: {
+        id: '3b1f8c22-930f-4b6d-8ac4-d54c5988e6d3',
+        email: 'user@example.com',
+        roles: ['USER'],
+      },
+    },
+  })
   @UseGuards(JwtAuthGuard)
   profile(@Req() request: AuthenticatedRequest): {
     id: string;
@@ -93,6 +137,13 @@ export class AuthController {
   }
 
   @Get('admin-only')
+  @ApiOperation({ summary: 'Admin-only authorization check endpoint' })
+  @ApiBearerAuth()
+  @ApiOkResponse({
+    schema: {
+      example: { allowed: true, scope: 'admin' },
+    },
+  })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   adminOnly(): { allowed: boolean; scope: string } {
@@ -100,6 +151,13 @@ export class AuthController {
   }
 
   @Get('admin-or-manager')
+  @ApiOperation({ summary: 'Admin or manager authorization check endpoint' })
+  @ApiBearerAuth()
+  @ApiOkResponse({
+    schema: {
+      example: { allowed: true, scope: 'admin-or-manager' },
+    },
+  })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
   elevatedAccess(): { allowed: boolean; scope: string } {
@@ -107,6 +165,13 @@ export class AuthController {
   }
 
   @Get('support-or-user')
+  @ApiOperation({ summary: 'Support or user authorization check endpoint' })
+  @ApiBearerAuth()
+  @ApiOkResponse({
+    schema: {
+      example: { allowed: true, scope: 'support-or-user' },
+    },
+  })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.SUPPORT, UserRole.USER)
   standardAccess(): { allowed: boolean; scope: string } {
