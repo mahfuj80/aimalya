@@ -1,7 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import {
-  NOTIFICATION_CHANNEL,
-} from '../interfaces/notification-channel.port';
+import { NOTIFICATION_CHANNEL } from '../interfaces/notification-channel.port';
 import type { INotificationChannel } from '../interfaces/notification-channel.port';
 
 type SendNotificationInput = {

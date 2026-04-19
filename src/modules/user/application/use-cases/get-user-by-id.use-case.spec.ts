@@ -9,7 +9,9 @@ describe('GetUserByIdUseCase', () => {
     const repo: IUserRepository = {
       findById: jest
         .fn()
-        .mockResolvedValue(new UserEntity('u1', 'u1@mail.com', [UserRole.USER], true)),
+        .mockResolvedValue(
+          new UserEntity('u1', 'u1@mail.com', [UserRole.USER], true),
+        ),
       findAll: jest.fn(),
     };
 

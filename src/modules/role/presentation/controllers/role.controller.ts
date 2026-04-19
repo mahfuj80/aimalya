@@ -1,5 +1,10 @@
 import { Body, Controller, Get, Param, Put } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import {
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 import { UpdateUserRolesRequestDto } from '../../application/dto/update-user-roles.request.dto';
 import { UserRolesResponseDto } from '../../application/dto/user-roles.response.dto';
 import { RoleDtoMapper } from '../../application/mappers/role-dto.mapper';
@@ -39,7 +44,10 @@ export class RoleController {
     @Param('userId') userId: string,
     @Body() dto: UpdateUserRolesRequestDto,
   ): Promise<UserRolesResponseDto> {
-    const roleEntity = await this.updateUserRolesUseCase.execute(userId, dto.roles);
+    const roleEntity = await this.updateUserRolesUseCase.execute(
+      userId,
+      dto.roles,
+    );
     return RoleDtoMapper.toResponse(roleEntity);
   }
 }

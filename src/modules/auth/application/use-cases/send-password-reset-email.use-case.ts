@@ -1,7 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import {
-  AUTH_MAIL_SENDER,
-} from '../interfaces/mail-sender.port';
+import { AUTH_MAIL_SENDER } from '../interfaces/mail-sender.port';
 import type { IAuthMailSender } from '../interfaces/mail-sender.port';
 
 export type SendPasswordResetEmailInput = {

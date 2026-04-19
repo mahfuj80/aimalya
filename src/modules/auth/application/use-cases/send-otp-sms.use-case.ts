@@ -1,7 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import {
-  AUTH_SMS_SENDER,
-} from '../interfaces/sms-sender.port';
+import { AUTH_SMS_SENDER } from '../interfaces/sms-sender.port';
 import type { IAuthSmsSender } from '../interfaces/sms-sender.port';
 
 export type SendOtpSmsInput = {
@@ -33,7 +31,10 @@ export class SendOtpSmsUseCase {
       this.logger.log(`OTP SMS sent to ${input.phoneNumber}`);
       return { success: true };
     } catch (error) {
-      this.logger.error(`Failed to send OTP SMS to ${input.phoneNumber}:`, error);
+      this.logger.error(
+        `Failed to send OTP SMS to ${input.phoneNumber}:`,
+        error,
+      );
       throw error;
     }
   }

@@ -10,8 +10,8 @@ describe('AppController (e2e)', () => {
 
   const prismaServiceMock: Partial<PrismaService> = {
     user: {} as PrismaService['user'],
-    onModuleInit: async () => undefined,
-    onModuleDestroy: async () => undefined,
+    onModuleInit: () => undefined,
+    onModuleDestroy: () => undefined,
     enableShutdownHooks: () => undefined,
   };
 

@@ -3,8 +3,9 @@ import { SendPasswordResetEmailUseCase } from './send-password-reset-email.use-c
 
 describe('SendPasswordResetEmailUseCase', () => {
   it('sends password reset email through mail sender port', async () => {
+    const sendMock = jest.fn().mockResolvedValue(undefined);
     const mailSender: IAuthMailSender = {
-      send: jest.fn().mockResolvedValue(undefined),
+      send: sendMock,
     };
 
     const useCase = new SendPasswordResetEmailUseCase(mailSender);
@@ -15,7 +16,7 @@ describe('SendPasswordResetEmailUseCase', () => {
     });
 
     expect(result.success).toBe(true);
-    expect(mailSender.send).toHaveBeenCalled();
+    expect(sendMock.mock.calls).toHaveLength(1);
   });
 
   it('bubbles mail sender errors', async () => {

@@ -27,7 +27,6 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
       throw new Error('DATABASE_URL environment variable is required');
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     const client = new PrismaClient({
       adapter: new PrismaPg({ connectionString }),
     }) as unknown as PrismaClientLike;
@@ -35,7 +34,6 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   }
 
   get user() {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return this.prisma.user;
   }
 

@@ -1,8 +1,6 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { UserRole } from '../../../../core/enums/role.enum';
-import {
-  ROLE_REPOSITORY,
-} from '../../domain/repositories/role.repository';
+import { ROLE_REPOSITORY } from '../../domain/repositories/role.repository';
 import type { IRoleRepository } from '../../domain/repositories/role.repository';
 import type { RoleEntity } from '../../domain/entities/role.entity';
 

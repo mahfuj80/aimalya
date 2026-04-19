@@ -43,7 +43,7 @@ export class NotificationChannelService implements INotificationChannel {
 
       default:
         throw new BadRequestException(
-          `Unknown notification channel: ${channel}`,
+          `Unknown notification channel: ${String(channel)}`,
         );
     }
   }
@@ -52,7 +52,7 @@ export class NotificationChannelService implements INotificationChannel {
    * Send in-app notification
    * In production: persist to database, trigger WebSocket/Server-Sent Events
    */
-  private async sendInApp(payload: NotificationPayload): Promise<void> {
+  private sendInApp(payload: NotificationPayload): void {
     this.logger.log(
       `Sending IN_APP notification to user ${payload.userId}: ${payload.title}`,
     );

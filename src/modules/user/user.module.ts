@@ -6,14 +6,14 @@ import { GetUserByIdUseCase } from './application/use-cases/get-user-by-id.use-c
 import { ListUsersUseCase } from './application/use-cases/list-users.use-case';
 
 @Module({
-	controllers: [UserController],
-	providers: [
-		GetUserByIdUseCase,
-		ListUsersUseCase,
-		{
-			provide: USER_REPOSITORY,
-			useClass: PrismaUserRepository,
-		},
-	],
+  controllers: [UserController],
+  providers: [
+    GetUserByIdUseCase,
+    ListUsersUseCase,
+    {
+      provide: USER_REPOSITORY,
+      useClass: PrismaUserRepository,
+    },
+  ],
 })
 export class UserModule {}

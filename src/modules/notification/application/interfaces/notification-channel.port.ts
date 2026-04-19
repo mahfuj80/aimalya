@@ -11,5 +11,8 @@ export type NotificationPayload = {
 export const NOTIFICATION_CHANNEL = Symbol('NOTIFICATION_CHANNEL');
 
 export interface INotificationChannel {
-  send(channel: NotificationChannel, payload: NotificationPayload): Promise<void>;
+  send(
+    channel: NotificationChannel,
+    payload: NotificationPayload,
+  ): Promise<void>;
 }

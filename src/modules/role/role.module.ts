@@ -6,14 +6,14 @@ import { PrismaRoleRepository } from './infrastructure/repositories/prisma-role.
 import { RoleController } from './presentation/controllers/role.controller';
 
 @Module({
-	controllers: [RoleController],
-	providers: [
-		GetUserRolesUseCase,
-		UpdateUserRolesUseCase,
-		{
-			provide: ROLE_REPOSITORY,
-			useClass: PrismaRoleRepository,
-		},
-	],
+  controllers: [RoleController],
+  providers: [
+    GetUserRolesUseCase,
+    UpdateUserRolesUseCase,
+    {
+      provide: ROLE_REPOSITORY,
+      useClass: PrismaRoleRepository,
+    },
+  ],
 })
 export class RoleModule {}

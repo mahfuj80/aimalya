@@ -1,5 +1,10 @@
 import { Controller, Get, Param } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import {
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ListUsersUseCase } from '../../application/use-cases/list-users.use-case';
 import { GetUserByIdUseCase } from '../../application/use-cases/get-user-by-id.use-case';
 import { UserDtoMapper } from '../../application/mappers/user-dto.mapper';
@@ -18,7 +23,7 @@ export class UserController {
   @ApiOkResponse({ type: UserResponseDto, isArray: true })
   async list(): Promise<UserResponseDto[]> {
     const users = await this.listUsersUseCase.execute();
-    return users.map(UserDtoMapper.toResponse);
+    return users.map((user) => UserDtoMapper.toResponse(user));
   }
 
   @Get(':id')

@@ -41,12 +41,15 @@ describe('ChangePasswordUseCase', () => {
     });
 
     expect(result.success).toBe(true);
-    expect(repo.updatePasswordHash).toHaveBeenCalledWith(
-      'u1',
-      expect.any(String),
+    expect(repo.updatePasswordHash.mock.calls).toEqual(
+      expect.arrayContaining([['u1', expect.any(String)]]),
     );
-    expect(repo.updateRefreshTokenHash).toHaveBeenCalledWith('u1', null);
-    expect(repo.clearPasswordResetCode).toHaveBeenCalledWith('u1');
+    expect(repo.updateRefreshTokenHash.mock.calls).toEqual(
+      expect.arrayContaining([['u1', null]]),
+    );
+    expect(repo.clearPasswordResetCode.mock.calls).toEqual(
+      expect.arrayContaining([['u1']]),
+    );
   });
 
   it('throws when current password is invalid', async () => {

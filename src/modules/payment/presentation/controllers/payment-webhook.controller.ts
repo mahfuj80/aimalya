@@ -12,10 +12,10 @@ export class PaymentWebhookController {
   ) {}
 
   @Post('stripe')
-  async handleStripeWebhook(
+  handleStripeWebhook(
     @Req() request: RawBodyRequest<Request>,
     @Body() body: Record<string, unknown>,
-  ): Promise<{ received: boolean }> {
+  ): { received: boolean } {
     const stripeSignatureHeader = request.headers['stripe-signature'];
     const signature = Array.isArray(stripeSignatureHeader)
       ? stripeSignatureHeader[0]

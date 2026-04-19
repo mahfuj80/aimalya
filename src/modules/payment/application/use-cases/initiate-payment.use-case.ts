@@ -1,7 +1,5 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import {
-  PAYMENT_GATEWAY,
-} from '../interfaces/payment-gateway.port';
+import { PAYMENT_GATEWAY } from '../interfaces/payment-gateway.port';
 import type { IPaymentGateway } from '../interfaces/payment-gateway.port';
 
 export type InitiatePaymentInput = {

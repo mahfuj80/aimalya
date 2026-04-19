@@ -29,8 +29,8 @@ describe('UpdateUserRolesUseCase', () => {
 
     const useCase = new UpdateUserRolesUseCase(repo);
 
-    await expect(useCase.execute('missing', [UserRole.USER])).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(
+      useCase.execute('missing', [UserRole.USER]),
+    ).rejects.toBeInstanceOf(NotFoundException);
   });
 });

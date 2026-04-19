@@ -3,8 +3,9 @@ import { SendOtpSmsUseCase } from './send-otp-sms.use-case';
 
 describe('SendOtpSmsUseCase', () => {
   it('sends OTP via sms sender port', async () => {
+    const sendMock = jest.fn().mockResolvedValue(undefined);
     const smsSender: IAuthSmsSender = {
-      send: jest.fn().mockResolvedValue(undefined),
+      send: sendMock,
     };
 
     const useCase = new SendOtpSmsUseCase(smsSender);
@@ -15,7 +16,7 @@ describe('SendOtpSmsUseCase', () => {
     });
 
     expect(result.success).toBe(true);
-    expect(smsSender.send).toHaveBeenCalled();
+    expect(sendMock.mock.calls).toHaveLength(1);
   });
 
   it('bubbles sms sender errors', async () => {

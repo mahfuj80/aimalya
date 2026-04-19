@@ -41,6 +41,7 @@ export class MailService {
         };
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const info = await this.transporter.sendMail({
         from: this.config.from,
         to: payload.to,
@@ -49,9 +50,14 @@ export class MailService {
         html: payload.html,
       });
 
+      let messageId: string | undefined;
+      if (info && typeof info === 'object' && 'messageId' in info) {
+        messageId = String((info as Record<string, unknown>).messageId);
+      }
+
       return {
         success: true,
-        messageId: info.messageId,
+        messageId,
       };
     } catch (error) {
       this.logger.error(`Failed to send email to ${payload.to}:`, error);

@@ -3,8 +3,9 @@ import { SendNotificationUseCase } from './send-notification.use-case';
 
 describe('SendNotificationUseCase', () => {
   it('dispatches notification through channel port', async () => {
+    const sendMock = jest.fn().mockResolvedValue(undefined);
     const channel: INotificationChannel = {
-      send: jest.fn().mockResolvedValue(undefined),
+      send: sendMock,
     };
 
     const useCase = new SendNotificationUseCase(channel);
@@ -16,7 +17,7 @@ describe('SendNotificationUseCase', () => {
     });
 
     expect(result.success).toBe(true);
-    expect(channel.send).toHaveBeenCalled();
+    expect(sendMock.mock.calls).toHaveLength(1);
   });
 
   it('bubbles channel errors', async () => {
