@@ -1,5 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { MailService } from '../../../../integrations/mail/mail.service';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  AUTH_MAIL_SENDER,
+} from '../interfaces/mail-sender.port';
+import type { IAuthMailSender } from '../interfaces/mail-sender.port';
 
 export type SendPasswordResetEmailInput = {
   email: string;
@@ -10,7 +13,7 @@ export type SendPasswordResetEmailInput = {
 /**
  * Example Use-Case: SendPasswordResetEmailUseCase
  *
- * Demonstrates how to integrate MailService into application use-cases.
+ * Demonstrates how to use an outbound mail port in application use-cases.
  *
  * This use-case would be injected into auth controllers/services
  * to send password reset emails when users request email verification.
@@ -25,7 +28,10 @@ export type SendPasswordResetEmailInput = {
 export class SendPasswordResetEmailUseCase {
   private readonly logger = new Logger(SendPasswordResetEmailUseCase.name);
 
-  constructor(private readonly mailService: MailService) {}
+  constructor(
+    @Inject(AUTH_MAIL_SENDER)
+    private readonly mailSender: IAuthMailSender,
+  ) {}
 
   async execute(
     input: SendPasswordResetEmailInput,
@@ -52,7 +58,7 @@ export class SendPasswordResetEmailUseCase {
     `;
 
     try {
-      await this.mailService.send({
+      await this.mailSender.send({
         to: input.email,
         subject: 'Password Reset Request - Aimalya',
         text,

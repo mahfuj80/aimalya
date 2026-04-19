@@ -12,6 +12,10 @@ import { PasswordHasherService } from './infrastructure/services/password-hasher
 import { TokenService } from './infrastructure/services/token.service';
 import { SendOtpSmsUseCase } from './application/use-cases/send-otp-sms.use-case';
 import { SendPasswordResetEmailUseCase } from './application/use-cases/send-password-reset-email.use-case';
+import { AUTH_MAIL_SENDER } from './application/interfaces/mail-sender.port';
+import { AUTH_SMS_SENDER } from './application/interfaces/sms-sender.port';
+import { AuthMailSenderAdapter } from './infrastructure/services/auth-mail-sender.adapter';
+import { AuthSmsSenderAdapter } from './infrastructure/services/auth-sms-sender.adapter';
 
 @Module({
   imports: [PassportModule, JwtModule.register({})],
@@ -25,6 +29,16 @@ import { SendPasswordResetEmailUseCase } from './application/use-cases/send-pass
     PasswordHasherService,
     TokenService,
     JwtStrategy,
+    AuthMailSenderAdapter,
+    AuthSmsSenderAdapter,
+    {
+      provide: AUTH_MAIL_SENDER,
+      useExisting: AuthMailSenderAdapter,
+    },
+    {
+      provide: AUTH_SMS_SENDER,
+      useExisting: AuthSmsSenderAdapter,
+    },
     {
       provide: AUTH_USER_REPOSITORY,
       useClass: PrismaAuthUserRepository,

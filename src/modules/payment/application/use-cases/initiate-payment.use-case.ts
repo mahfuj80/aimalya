@@ -1,5 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { PaymentService } from '../../../../integrations/payment/payment.service';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  PAYMENT_GATEWAY,
+} from '../interfaces/payment-gateway.port';
+import type { IPaymentGateway } from '../interfaces/payment-gateway.port';
 
 export type InitiatePaymentInput = {
   userId: string;
@@ -19,7 +22,10 @@ export type InitiatePaymentOutput = {
 export class InitiatePaymentUseCase {
   private readonly logger = new Logger(InitiatePaymentUseCase.name);
 
-  constructor(private readonly paymentService: PaymentService) {}
+  constructor(
+    @Inject(PAYMENT_GATEWAY)
+    private readonly paymentGateway: IPaymentGateway,
+  ) {}
 
   async execute(input: InitiatePaymentInput): Promise<InitiatePaymentOutput> {
     this.logger.debug(
@@ -27,7 +33,7 @@ export class InitiatePaymentUseCase {
     );
 
     try {
-      const paymentResult = await this.paymentService.createPaymentIntent({
+      const paymentResult = await this.paymentGateway.createPaymentIntent({
         amount: input.amount,
         currency: 'usd',
         customerId: input.userId,

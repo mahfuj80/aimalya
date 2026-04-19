@@ -1,16 +1,11 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { MailService } from '../../../../integrations/mail/mail.service';
 import { SmsService } from '../../../../integrations/sms/sms.service';
-
-export type NotificationChannel = 'IN_APP' | 'EMAIL' | 'SMS';
-
-export type NotificationPayload = {
-  userId: string;
-  title: string;
-  message: string;
-  email?: string;
-  phoneNumber?: string;
-};
+import {
+  INotificationChannel,
+  NotificationChannel,
+  NotificationPayload,
+} from '../../application/interfaces/notification-channel.port';
 
 /**
  * NotificationChannelService
@@ -24,7 +19,7 @@ export type NotificationPayload = {
  * Actual user data (email, phone) comes from parent use-case.
  */
 @Injectable()
-export class NotificationChannelService {
+export class NotificationChannelService implements INotificationChannel {
   private readonly logger = new Logger(NotificationChannelService.name);
 
   constructor(

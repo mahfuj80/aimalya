@@ -1,5 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { SmsService } from '../../../../integrations/sms/sms.service';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  AUTH_SMS_SENDER,
+} from '../interfaces/sms-sender.port';
+import type { IAuthSmsSender } from '../interfaces/sms-sender.port';
 
 export type SendOtpSmsInput = {
   phoneNumber: string;
@@ -10,7 +13,7 @@ export type SendOtpSmsInput = {
 /**
  * Example Use-Case: SendOtpSmsUseCase
  *
- * Demonstrates how to integrate SmsService into application use-cases.
+ * Demonstrates how to use an outbound SMS port in application use-cases.
  *
  * This use-case would be injected into auth controllers/services
  * to send OTP codes via SMS for phone verification or 2FA.
@@ -25,7 +28,10 @@ export type SendOtpSmsInput = {
 export class SendOtpSmsUseCase {
   private readonly logger = new Logger(SendOtpSmsUseCase.name);
 
-  constructor(private readonly smsService: SmsService) {}
+  constructor(
+    @Inject(AUTH_SMS_SENDER)
+    private readonly smsSender: IAuthSmsSender,
+  ) {}
 
   async execute(input: SendOtpSmsInput): Promise<{ success: boolean }> {
     this.logger.debug(`Sending OTP SMS to ${input.phoneNumber}`);
@@ -33,14 +39,10 @@ export class SendOtpSmsUseCase {
     const message = `Your Aimalya verification code is: ${input.otpCode}. Valid for ${input.expiryMinutes} minutes. Do not share this code.`;
 
     try {
-      const result = await this.smsService.send({
+      await this.smsSender.send({
         phoneNumber: input.phoneNumber,
         message,
       });
-
-      if (!result.success) {
-        throw new Error('SMS send failed');
-      }
 
       this.logger.log(`OTP SMS sent to ${input.phoneNumber}`);
       return { success: true };

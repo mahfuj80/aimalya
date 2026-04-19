@@ -1,5 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { NotificationChannelService } from '../../infrastructure/services/notification-channel.service';
+import { Inject, Injectable } from '@nestjs/common';
+import {
+  NOTIFICATION_CHANNEL,
+} from '../interfaces/notification-channel.port';
+import type { INotificationChannel } from '../interfaces/notification-channel.port';
 
 type SendNotificationInput = {
   userId: string;
@@ -13,11 +16,12 @@ type SendNotificationInput = {
 @Injectable()
 export class SendNotificationUseCase {
   constructor(
-    private readonly notificationChannelService: NotificationChannelService,
+    @Inject(NOTIFICATION_CHANNEL)
+    private readonly notificationChannel: INotificationChannel,
   ) {}
 
   async execute(input: SendNotificationInput): Promise<{ success: boolean }> {
-    await this.notificationChannelService.send(input.channel, {
+    await this.notificationChannel.send(input.channel, {
       userId: input.userId,
       title: input.title,
       message: input.message,

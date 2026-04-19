@@ -1,13 +1,15 @@
 import { Body, Controller, Logger, Post, Req } from '@nestjs/common';
 import type { RawBodyRequest } from '@nestjs/common';
 import type { Request } from 'express';
-import { PaymentService } from '../../../../integrations/payment/payment.service';
+import { VerifyStripeWebhookUseCase } from '../../application/use-cases/verify-stripe-webhook.use-case';
 
 @Controller('payments/webhook')
 export class PaymentWebhookController {
   private readonly logger = new Logger(PaymentWebhookController.name);
 
-  constructor(private readonly paymentService: PaymentService) {}
+  constructor(
+    private readonly verifyStripeWebhookUseCase: VerifyStripeWebhookUseCase,
+  ) {}
 
   @Post('stripe')
   async handleStripeWebhook(
@@ -25,7 +27,7 @@ export class PaymentWebhookController {
     }
 
     const rawBody = request.rawBody ?? Buffer.from(JSON.stringify(body));
-    const verification = this.paymentService.verifyWebhookSignature(
+    const verification = this.verifyStripeWebhookUseCase.execute(
       rawBody,
       signature,
     );
