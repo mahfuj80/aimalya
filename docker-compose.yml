@@ -17,7 +17,7 @@ services:
       - ./src:/app/src
       - ./prisma:/app/prisma
       - ./package.json:/app/package.json
-    command: sh -c "npx prisma db push --schema prisma/schema.prisma --url \"$$DATABASE_URL\" && npm run start:dev"
+    command: sh -c "npx prisma generate --schema prisma/schema.prisma && npx prisma db push --schema prisma/schema.prisma --url \"$$DATABASE_URL\" && npm run start:dev"
     depends_on:
       db:
         condition: service_healthy
@@ -35,7 +35,7 @@ services:
       POSTGRES_USER: aimalya
       POSTGRES_PASSWORD: aimalya_dev_password
     ports:
-      - '5432:5432'
+      - '5433:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:

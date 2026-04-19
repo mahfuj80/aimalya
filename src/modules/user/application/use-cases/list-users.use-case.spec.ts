@@ -26,6 +26,7 @@ describe('ListUsersUseCase', () => {
     const repo: IUserRepository = {
       findById: jest.fn(),
       findAll: jest.fn().mockResolvedValue([]),
+      updateProfile: jest.fn(),
     };
 
     const useCase = new ListUsersUseCase(repo);
