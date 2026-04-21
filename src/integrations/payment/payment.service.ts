@@ -21,7 +21,7 @@ export type PaymentIntentResult = {
 export class PaymentService {
   private readonly logger = new Logger(PaymentService.name);
   private readonly config: PaymentConfig;
-  private readonly stripe: Stripe;
+  private readonly stripe: InstanceType<typeof Stripe>;
 
   constructor() {
     this.config = getPaymentConfig();
