@@ -23,6 +23,7 @@ import { RefreshTokenUseCase } from '../../application/use-cases/refresh-token.u
 import { ResetForgottenPasswordUseCase } from '../../application/use-cases/reset-forgotten-password.use-case';
 import { RegisterUseCase } from '../../application/use-cases/register.use-case';
 import { JwtAuthGuard } from '../../infrastructure/services/jwt-auth.guard';
+import { WriteAdminAuditLogUseCase } from '../../../admin-audit/application/use-cases/write-admin-audit-log.use-case';
 
 type AuthenticatedRequest = {
   user: {
@@ -30,6 +31,8 @@ type AuthenticatedRequest = {
     email: string;
     roles: UserRole[];
   };
+  ip?: string;
+  headers?: Record<string, string | string[] | undefined>;
 };
 
 @ApiTags('Auth')
@@ -42,6 +45,7 @@ export class AuthController {
     private readonly changePasswordUseCase: ChangePasswordUseCase,
     private readonly requestForgotPasswordUseCase: RequestForgotPasswordUseCase,
     private readonly resetForgottenPasswordUseCase: ResetForgottenPasswordUseCase,
+    private readonly writeAdminAuditLogUseCase: WriteAdminAuditLogUseCase,
   ) {}
 
   @Post('register')
@@ -146,7 +150,18 @@ export class AuthController {
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
-  adminOnly(): { allowed: boolean; scope: string } {
+  async adminOnly(
+    @Req() request: AuthenticatedRequest,
+  ): Promise<{ allowed: boolean; scope: string }> {
+    // Write audit log
+    const userAgent = request.headers?.['user-agent'];
+    await this.writeAdminAuditLogUseCase.execute({
+      actorUserId: request.user.id,
+      action: 'AUTH_ADMIN_ONLY_CHECK',
+      ipAddress: request.ip,
+      userAgent: typeof userAgent === 'string' ? userAgent : undefined,
+      metadata: { endpoint: 'admin-only' },
+    });
     return { allowed: true, scope: 'admin' };
   }
 
@@ -160,7 +175,17 @@ export class AuthController {
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
-  elevatedAccess(): { allowed: boolean; scope: string } {
+  async elevatedAccess(
+    @Req() request: AuthenticatedRequest,
+  ): Promise<{ allowed: boolean; scope: string }> {
+    const userAgent = request.headers?.['user-agent'];
+    await this.writeAdminAuditLogUseCase.execute({
+      actorUserId: request.user.id,
+      action: 'AUTH_ADMIN_OR_MANAGER_CHECK',
+      ipAddress: request.ip,
+      userAgent: typeof userAgent === 'string' ? userAgent : undefined,
+      metadata: { endpoint: 'admin-or-manager' },
+    });
     return { allowed: true, scope: 'admin-or-manager' };
   }
 
@@ -174,7 +199,17 @@ export class AuthController {
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.SUPPORT, UserRole.USER)
-  standardAccess(): { allowed: boolean; scope: string } {
+  async standardAccess(
+    @Req() request: AuthenticatedRequest,
+  ): Promise<{ allowed: boolean; scope: string }> {
+    const userAgent = request.headers?.['user-agent'];
+    await this.writeAdminAuditLogUseCase.execute({
+      actorUserId: request.user.id,
+      action: 'AUTH_SUPPORT_OR_USER_CHECK',
+      ipAddress: request.ip,
+      userAgent: typeof userAgent === 'string' ? userAgent : undefined,
+      metadata: { endpoint: 'support-or-user' },
+    });
     return { allowed: true, scope: 'support-or-user' };
   }
 }

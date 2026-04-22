@@ -8,8 +8,9 @@ export const setupSwagger = (app: INestApplication): void => {
 
   const config = new DocumentBuilder()
     .setTitle('Aimalya API')
-    .setDescription('Enterprise NestJS boilerplate API documentation')
-    .setVersion('1.0.0')
+    .setDescription('Aimalya Enterprise API documentation.\n\nThis API provides endpoints for authentication, user management, business operations, notifications, payments, and more.\n\n**All endpoints require proper authentication and authorization.**')
+    .setVersion('1.1.0')
+    .setContact('Aimalya Support', 'https://aimalya.com', 'support@aimalya.com')
     .addBearerAuth()
     .build();
 
