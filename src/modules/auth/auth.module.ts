@@ -19,9 +19,10 @@ import { AUTH_MAIL_SENDER } from './application/interfaces/mail-sender.port';
 import { AUTH_SMS_SENDER } from './application/interfaces/sms-sender.port';
 import { AuthMailSenderAdapter } from './infrastructure/services/auth-mail-sender.adapter';
 import { AuthSmsSenderAdapter } from './infrastructure/services/auth-sms-sender.adapter';
+import { VerificationModule } from '../verification/verification.module';
 
 @Module({
-  imports: [PassportModule, JwtModule.register({})],
+  imports: [PassportModule, JwtModule.register({}), VerificationModule],
   controllers: [AuthController],
   providers: [
     RegisterUseCase,

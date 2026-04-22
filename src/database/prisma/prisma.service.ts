@@ -10,6 +10,10 @@ import { PrismaClient } from '@prisma/client';
 
 type PrismaClientLike = {
   user: PrismaClient['user'];
+  business: PrismaClient['business'];
+  businessMember: PrismaClient['businessMember'];
+  verificationCode: PrismaClient['verificationCode'];
+  adminAuditLog: PrismaClient['adminAuditLog'];
   $connect: () => Promise<void>;
   $disconnect: () => Promise<void>;
   $on: (event: string, callback: (arg: unknown) => Promise<void>) => void;
@@ -58,6 +62,22 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
 
   get user() {
     return this.prisma.user;
+  }
+
+  get business() {
+    return this.prisma.business;
+  }
+
+  get businessMember() {
+    return this.prisma.businessMember;
+  }
+
+  get verificationCode() {
+    return this.prisma.verificationCode;
+  }
+
+  get adminAuditLog() {
+    return this.prisma.adminAuditLog;
   }
 
   async onModuleInit(): Promise<void> {

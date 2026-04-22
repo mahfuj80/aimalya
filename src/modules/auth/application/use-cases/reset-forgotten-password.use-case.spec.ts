@@ -1,9 +1,11 @@
 import { UnauthorizedException } from '@nestjs/common';
+import { VerificationPurpose } from '@prisma/client';
 import { UserRole } from '../../../../core/enums/role.enum';
 import { AuthUserEntity } from '../../domain/entities/auth-user.entity';
 import { IAuthUserRepository } from '../../domain/repositories/auth-user.repository';
 import { PasswordHasherService } from '../../infrastructure/services/password-hasher.service';
 import { ResetForgottenPasswordUseCase } from './reset-forgotten-password.use-case';
+import { VerifyVerificationCodeUseCase } from '../../../verification/application/use-cases/verify-verification-code.use-case';
 
 describe('ResetForgottenPasswordUseCase', () => {
   const hasher = new PasswordHasherService();
@@ -28,12 +30,23 @@ describe('ResetForgottenPasswordUseCase', () => {
         [UserRole.USER],
         true,
         null,
-        hasher.hash('123456'),
-        new Date(Date.now() + 5 * 60 * 1000),
+        null,
+        null,
       ),
     );
 
-    const useCase = new ResetForgottenPasswordUseCase(repo, hasher);
+    const verifyVerificationCodeUseCase: Pick<
+      VerifyVerificationCodeUseCase,
+      'execute'
+    > = {
+      execute: jest.fn().mockResolvedValue({ success: true }),
+    };
+
+    const useCase = new ResetForgottenPasswordUseCase(
+      repo,
+      hasher,
+      verifyVerificationCodeUseCase as VerifyVerificationCodeUseCase,
+    );
     const result = await useCase.execute({
       email: 'user@mail.com',
       otpCode: '123456',
@@ -47,8 +60,12 @@ describe('ResetForgottenPasswordUseCase', () => {
     expect(repo.updateRefreshTokenHash.mock.calls).toEqual(
       expect.arrayContaining([['u1', null]]),
     );
-    expect(repo.clearPasswordResetCode.mock.calls).toEqual(
-      expect.arrayContaining([['u1']]),
+    expect(verifyVerificationCodeUseCase.execute).toHaveBeenCalledWith(
+      expect.objectContaining({
+        purpose: VerificationPurpose.FORGOT_PASSWORD,
+        email: 'user@mail.com',
+        code: '123456',
+      }),
     );
   });
 
@@ -62,12 +79,25 @@ describe('ResetForgottenPasswordUseCase', () => {
         [UserRole.USER],
         true,
         null,
-        hasher.hash('123456'),
-        new Date(Date.now() + 5 * 60 * 1000),
+        null,
+        null,
       ),
     );
 
-    const useCase = new ResetForgottenPasswordUseCase(repo, hasher);
+    const verifyVerificationCodeUseCase: Pick<
+      VerifyVerificationCodeUseCase,
+      'execute'
+    > = {
+      execute: jest
+        .fn()
+        .mockRejectedValue(new UnauthorizedException('Invalid or expired reset code')),
+    };
+
+    const useCase = new ResetForgottenPasswordUseCase(
+      repo,
+      hasher,
+      verifyVerificationCodeUseCase as VerifyVerificationCodeUseCase,
+    );
 
     await expect(
       useCase.execute({

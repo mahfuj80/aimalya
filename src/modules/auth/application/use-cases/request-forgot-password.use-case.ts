@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { randomInt } from 'crypto';
+import { NotificationChannel, VerificationPurpose } from '@prisma/client';
 import { AUTH_USER_REPOSITORY } from '../../domain/repositories/auth-user.repository';
 import type { IAuthUserRepository } from '../../domain/repositories/auth-user.repository';
-import { PasswordHasherService } from '../../infrastructure/services/password-hasher.service';
+import { SendVerificationCodeUseCase } from '../../../verification/application/use-cases/send-verification-code.use-case';
 import { SendPasswordResetEmailUseCase } from './send-password-reset-email.use-case';
 
 @Injectable()
@@ -12,7 +12,7 @@ export class RequestForgotPasswordUseCase {
   constructor(
     @Inject(AUTH_USER_REPOSITORY)
     private readonly authUserRepository: IAuthUserRepository,
-    private readonly passwordHasherService: PasswordHasherService,
+    private readonly sendVerificationCodeUseCase: SendVerificationCodeUseCase,
     private readonly sendPasswordResetEmailUseCase: SendPasswordResetEmailUseCase,
   ) {}
 
@@ -23,23 +23,23 @@ export class RequestForgotPasswordUseCase {
       return { success: true };
     }
 
-    const otpCode = randomInt(0, 1000000).toString().padStart(6, '0');
-    const codeHash = this.passwordHasherService.hash(otpCode);
-    const expiresAt = new Date(
-      Date.now() +
-        RequestForgotPasswordUseCase.RESET_CODE_EXPIRY_MINUTES * 60 * 1000,
-    );
+    const { code, expiresAt } = await this.sendVerificationCodeUseCase.execute({
+      userId: user.id,
+      email: user.email,
+      purpose: VerificationPurpose.FORGOT_PASSWORD,
+      channel: NotificationChannel.EMAIL,
+      ttlMinutes: RequestForgotPasswordUseCase.RESET_CODE_EXPIRY_MINUTES,
+    });
 
-    await this.authUserRepository.setPasswordResetCode(
-      user.id,
-      codeHash,
-      expiresAt,
+    const expiryMinutes = Math.max(
+      1,
+      Math.ceil((expiresAt.getTime() - Date.now()) / (60 * 1000)),
     );
 
     await this.sendPasswordResetEmailUseCase.execute({
       email: user.email,
-      otpCode,
-      expiryMinutes: RequestForgotPasswordUseCase.RESET_CODE_EXPIRY_MINUTES,
+      otpCode: code,
+      expiryMinutes,
     });
 
     return { success: true };

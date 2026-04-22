@@ -1,13 +1,11 @@
 import { UserRole } from '../../../../core/enums/role.enum';
 import { AuthUserEntity } from '../../domain/entities/auth-user.entity';
 import { IAuthUserRepository } from '../../domain/repositories/auth-user.repository';
-import { PasswordHasherService } from '../../infrastructure/services/password-hasher.service';
 import { RequestForgotPasswordUseCase } from './request-forgot-password.use-case';
 import { SendPasswordResetEmailUseCase } from './send-password-reset-email.use-case';
+import { SendVerificationCodeUseCase } from '../../../verification/application/use-cases/send-verification-code.use-case';
 
 describe('RequestForgotPasswordUseCase', () => {
-  const hasher = new PasswordHasherService();
-
   const createRepo = (): jest.Mocked<IAuthUserRepository> => ({
     findByEmail: jest.fn(),
     findById: jest.fn(),
@@ -24,7 +22,7 @@ describe('RequestForgotPasswordUseCase', () => {
       new AuthUserEntity(
         'u1',
         'user@mail.com',
-        hasher.hash('pass12345'),
+        'hashed-password',
         [UserRole.USER],
         true,
         null,
@@ -40,19 +38,29 @@ describe('RequestForgotPasswordUseCase', () => {
       execute: jest.fn().mockResolvedValue({ success: true }),
     };
 
+    const sendVerificationCodeUseCase: Pick<SendVerificationCodeUseCase, 'execute'> = {
+      execute: jest.fn().mockResolvedValue({
+        code: '123456',
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+      }),
+    };
+
     const useCase = new RequestForgotPasswordUseCase(
       repo,
-      hasher,
+      sendVerificationCodeUseCase as SendVerificationCodeUseCase,
       sendPasswordResetEmailUseCase as SendPasswordResetEmailUseCase,
     );
 
     const result = await useCase.execute({ email: 'user@mail.com' });
 
     expect(result.success).toBe(true);
-    expect(repo.setPasswordResetCode.mock.calls).toEqual(
-      expect.arrayContaining([['u1', expect.any(String), expect.any(Date)]]),
+    expect(sendVerificationCodeUseCase.execute).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: 'u1',
+        email: 'user@mail.com',
+      }),
     );
-    // Verify the reset email was sent
+    expect(sendPasswordResetEmailUseCase.execute).toHaveBeenCalled();
   });
 
   it('returns success without email send when user is missing', async () => {
@@ -66,15 +74,19 @@ describe('RequestForgotPasswordUseCase', () => {
       execute: jest.fn().mockResolvedValue({ success: true }),
     };
 
+    const sendVerificationCodeUseCase: Pick<SendVerificationCodeUseCase, 'execute'> = {
+      execute: jest.fn(),
+    };
+
     const useCase = new RequestForgotPasswordUseCase(
       repo,
-      hasher,
+      sendVerificationCodeUseCase as SendVerificationCodeUseCase,
       sendPasswordResetEmailUseCase as SendPasswordResetEmailUseCase,
     );
 
     const result = await useCase.execute({ email: 'unknown@mail.com' });
 
     expect(result.success).toBe(true);
-    expect(repo.setPasswordResetCode.mock.calls).toHaveLength(0);
+    expect(sendVerificationCodeUseCase.execute).not.toHaveBeenCalled();
   });
 });
