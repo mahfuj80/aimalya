@@ -57,18 +57,62 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
-## Deployment
+## Cloud
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+**Cloud computing** is the delivery of computing services — including servers, storage, databases, networking, software, and more — over the internet ("the cloud"). Instead of owning and maintaining physical hardware, you rent access to computing resources from a cloud provider and pay only for what you use.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+In the context of this NestJS project, "cloud" refers to hosting and running your application on remote infrastructure provided by services such as AWS, Google Cloud, or Azure, rather than on a local machine.
+
+### Why use the cloud for this application?
+
+- **Scalability**: Scale your API, database, and job processors independently based on demand.
+- **Reliability**: Cloud providers offer high-availability zones and managed services (databases, queues, caches) with built-in redundancy.
+- **Managed services**: Offload operational concerns (backups, patching, monitoring) to the provider so you can focus on business logic.
+- **Docker-ready**: This project ships with a `Dockerfile` and `docker-compose.yml`, making it straightforward to run the same container image locally and in any cloud environment.
+
+### Key cloud concepts used in this project
+
+| Concept | What it means here |
+|---|---|
+| **Container** | The app is packaged as a Docker image and runs identically everywhere. |
+| **Orchestration** | Use Docker Compose locally; use Kubernetes, ECS/Fargate, or another container platform in production (configuration will vary by provider). |
+| **Managed database** | Replace the local Postgres container with RDS (AWS), Cloud SQL (GCP), or Azure Database. |
+| **Managed cache** | Replace the local Redis container with ElastiCache (AWS) or Memorystore (GCP). |
+| **Environment variables** | Secrets and config are injected at runtime; never baked into the image. |
+| **Health checks** | The compose file already defines health checks that cloud load balancers can use. |
+
+### Deployment options
+
+**Option 1 – NestJS Mau (AWS, quickest start)**
 
 ```bash
 $ npm install -g @nestjs/mau
 $ mau deploy
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+**Option 2 – Any container platform**
+
+Build the image and push it to a registry, then deploy to the platform of your choice:
+
+```bash
+# Build
+$ docker build -t your-org/your-app:latest .
+
+# Push to a registry (example: Docker Hub)
+$ docker push your-org/your-app:latest
+
+# Deploy on your platform (ECS, Cloud Run, Fly.io, Railway, Render, etc.)
+```
+
+**Option 3 – Docker Compose on a cloud VM**
+
+Copy the repository to any Linux VM (EC2, Compute Engine, Droplet, etc.) and run:
+
+```bash
+$ docker compose up -d
+```
+
+For more information on production deployment, see the [NestJS deployment documentation](https://docs.nestjs.com/deployment).
 
 ## Resources
 
