@@ -15,6 +15,7 @@ import { SendPasswordResetEmailUseCase } from './application/use-cases/send-pass
 import { ChangePasswordUseCase } from './application/use-cases/change-password.use-case';
 import { RequestForgotPasswordUseCase } from './application/use-cases/request-forgot-password.use-case';
 import { ResetForgottenPasswordUseCase } from './application/use-cases/reset-forgotten-password.use-case';
+import { VerifyForgotPasswordCodeUseCase } from './application/use-cases/verify-forgot-password-code.use-case';
 import { AUTH_MAIL_SENDER } from './application/interfaces/mail-sender.port';
 import { AUTH_SMS_SENDER } from './application/interfaces/sms-sender.port';
 import { AuthMailSenderAdapter } from './infrastructure/services/auth-mail-sender.adapter';
@@ -32,6 +33,7 @@ import { VerificationModule } from '../verification/verification.module';
     SendPasswordResetEmailUseCase,
     ChangePasswordUseCase,
     RequestForgotPasswordUseCase,
+    VerifyForgotPasswordCodeUseCase,
     ResetForgottenPasswordUseCase,
     PasswordHasherService,
     TokenService,

@@ -1,11 +1,10 @@
-import { UnauthorizedException } from '@nestjs/common';
-import { VerificationPurpose } from '@prisma/client';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { UserRole } from '../../../../core/enums/role.enum';
 import { AuthUserEntity } from '../../domain/entities/auth-user.entity';
 import { IAuthUserRepository } from '../../domain/repositories/auth-user.repository';
 import { PasswordHasherService } from '../../infrastructure/services/password-hasher.service';
 import { ResetForgottenPasswordUseCase } from './reset-forgotten-password.use-case';
-import { VerifyVerificationCodeUseCase } from '../../../verification/application/use-cases/verify-verification-code.use-case';
+import { TokenService } from '../../infrastructure/services/token.service';
 
 describe('ResetForgottenPasswordUseCase', () => {
   const hasher = new PasswordHasherService();
@@ -20,9 +19,9 @@ describe('ResetForgottenPasswordUseCase', () => {
     clearPasswordResetCode: jest.fn(),
   });
 
-  it('resets password when OTP is valid and not expired', async () => {
+  it('resets password when reset token is valid', async () => {
     const repo = createRepo();
-    repo.findByEmail.mockResolvedValue(
+    repo.findById.mockResolvedValue(
       new AuthUserEntity(
         'u1',
         'user@mail.com',
@@ -35,22 +34,24 @@ describe('ResetForgottenPasswordUseCase', () => {
       ),
     );
 
-    const verifyVerificationCodeUseCase: Pick<
-      VerifyVerificationCodeUseCase,
-      'execute'
-    > = {
-      execute: jest.fn().mockResolvedValue({ success: true }),
+    const tokenService: Pick<TokenService, 'verifyForgotPasswordResetToken'> = {
+      verifyForgotPasswordResetToken: jest.fn().mockResolvedValue({
+        userId: 'u1',
+        email: 'user@mail.com',
+      }),
     };
 
     const useCase = new ResetForgottenPasswordUseCase(
       repo,
       hasher,
-      verifyVerificationCodeUseCase as VerifyVerificationCodeUseCase,
+      tokenService as TokenService,
     );
+
     const result = await useCase.execute({
       email: 'user@mail.com',
-      otpCode: '123456',
+      resetToken: 'reset-token',
       newPassword: 'newPassword1',
+      confirmPassword: 'newPassword1',
     });
 
     expect(result.success).toBe(true);
@@ -60,50 +61,78 @@ describe('ResetForgottenPasswordUseCase', () => {
     expect(repo.updateRefreshTokenHash.mock.calls).toEqual(
       expect.arrayContaining([['u1', null]]),
     );
-    expect(verifyVerificationCodeUseCase.execute).toHaveBeenCalledWith(
-      expect.objectContaining({
-        purpose: VerificationPurpose.FORGOT_PASSWORD,
-        email: 'user@mail.com',
-        code: '123456',
-      }),
+    expect(tokenService.verifyForgotPasswordResetToken).toHaveBeenCalledWith(
+      'reset-token',
     );
   });
 
-  it('throws for invalid OTP code', async () => {
+  it('throws when passwords do not match', async () => {
     const repo = createRepo();
-    repo.findByEmail.mockResolvedValue(
-      new AuthUserEntity(
-        'u1',
-        'user@mail.com',
-        hasher.hash('oldPassword1'),
-        [UserRole.USER],
-        true,
-        null,
-        null,
-        null,
-      ),
-    );
-
-    const verifyVerificationCodeUseCase: Pick<
-      VerifyVerificationCodeUseCase,
-      'execute'
-    > = {
-      execute: jest
-        .fn()
-        .mockRejectedValue(new UnauthorizedException('Invalid or expired reset code')),
+    const tokenService: Pick<TokenService, 'verifyForgotPasswordResetToken'> = {
+      verifyForgotPasswordResetToken: jest.fn(),
     };
 
     const useCase = new ResetForgottenPasswordUseCase(
       repo,
       hasher,
-      verifyVerificationCodeUseCase as VerifyVerificationCodeUseCase,
+      tokenService as TokenService,
     );
 
     await expect(
       useCase.execute({
         email: 'user@mail.com',
-        otpCode: '999999',
+        resetToken: 'reset-token',
         newPassword: 'newPassword1',
+        confirmPassword: 'differentPassword1',
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('throws for invalid reset token', async () => {
+    const repo = createRepo();
+    const tokenService: Pick<TokenService, 'verifyForgotPasswordResetToken'> = {
+      verifyForgotPasswordResetToken: jest
+        .fn()
+        .mockRejectedValue(new UnauthorizedException('Invalid or expired reset token')),
+    };
+
+    const useCase = new ResetForgottenPasswordUseCase(
+      repo,
+      hasher,
+      tokenService as TokenService,
+    );
+
+    await expect(
+      useCase.execute({
+        email: 'user@mail.com',
+        resetToken: 'invalid-reset-token',
+        newPassword: 'newPassword1',
+        confirmPassword: 'newPassword1',
+      }),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
+  });
+
+  it('throws when token email does not match request email', async () => {
+    const repo = createRepo();
+    const tokenService: Pick<TokenService, 'verifyForgotPasswordResetToken'> = {
+      verifyForgotPasswordResetToken: jest.fn().mockResolvedValue({
+        userId: 'u1',
+        email: 'other@mail.com',
+      }),
+    };
+
+    const useCase = new ResetForgottenPasswordUseCase(
+      repo,
+      hasher,
+      tokenService as TokenService,
+    );
+
+    await expect(
+      useCase.execute({
+        email: 'user@mail.com',
+        resetToken: 'reset-token',
+        newPassword: 'newPassword1',
+        confirmPassword: 'newPassword1',
       }),
     ).rejects.toBeInstanceOf(UnauthorizedException);
   });

@@ -15,6 +15,7 @@ import { ForgotPasswordRequestDto } from '../../application/dto/forgot-password-
 import { LoginRequestDto } from '../../application/dto/login.request.dto';
 import { RefreshTokenRequestDto } from '../../application/dto/refresh-token.request.dto';
 import { ResetForgottenPasswordRequestDto } from '../../application/dto/reset-forgotten-password.request.dto';
+import { VerifyForgotPasswordCodeRequestDto } from '../../application/dto/verify-forgot-password-code.request.dto';
 import { ChangePasswordUseCase } from '../../application/use-cases/change-password.use-case';
 import { RegisterRequestDto } from '../../application/dto/register.request.dto';
 import { LoginUseCase } from '../../application/use-cases/login.use-case';
@@ -22,6 +23,7 @@ import { RequestForgotPasswordUseCase } from '../../application/use-cases/reques
 import { RefreshTokenUseCase } from '../../application/use-cases/refresh-token.use-case';
 import { ResetForgottenPasswordUseCase } from '../../application/use-cases/reset-forgotten-password.use-case';
 import { RegisterUseCase } from '../../application/use-cases/register.use-case';
+import { VerifyForgotPasswordCodeUseCase } from '../../application/use-cases/verify-forgot-password-code.use-case';
 import { JwtAuthGuard } from '../../infrastructure/services/jwt-auth.guard';
 
 type AuthenticatedRequest = {
@@ -41,6 +43,7 @@ export class AuthController {
     private readonly refreshTokenUseCase: RefreshTokenUseCase,
     private readonly changePasswordUseCase: ChangePasswordUseCase,
     private readonly requestForgotPasswordUseCase: RequestForgotPasswordUseCase,
+    private readonly verifyForgotPasswordCodeUseCase: VerifyForgotPasswordCodeUseCase,
     private readonly resetForgottenPasswordUseCase: ResetForgottenPasswordUseCase,
   ) {}
 
@@ -78,8 +81,28 @@ export class AuthController {
     return this.requestForgotPasswordUseCase.execute({ email: dto.email });
   }
 
+  @Post('password/forgot/verify')
+  @ApiOperation({ summary: 'Verify forgot-password OTP and issue reset token' })
+  @ApiOkResponse({
+    schema: {
+      example: {
+        success: true,
+        resetToken:
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.password-reset-token.signature',
+      },
+    },
+  })
+  verifyForgotPasswordCode(
+    @Body() dto: VerifyForgotPasswordCodeRequestDto,
+  ): Promise<{ success: boolean; resetToken: string }> {
+    return this.verifyForgotPasswordCodeUseCase.execute({
+      email: dto.email,
+      otpCode: dto.otpCode,
+    });
+  }
+
   @Post('password/forgot/reset')
-  @ApiOperation({ summary: 'Reset forgotten password using 6-digit OTP' })
+  @ApiOperation({ summary: 'Reset forgotten password using reset token' })
   @ApiOkResponse({
     schema: {
       example: { success: true },
@@ -90,8 +113,9 @@ export class AuthController {
   ): Promise<{ success: boolean }> {
     return this.resetForgottenPasswordUseCase.execute({
       email: dto.email,
-      otpCode: dto.otpCode,
+      resetToken: dto.resetToken,
       newPassword: dto.newPassword,
+      confirmPassword: dto.confirmPassword,
     });
   }
 

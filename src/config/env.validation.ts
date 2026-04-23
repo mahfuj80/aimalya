@@ -27,4 +27,30 @@ export const validateEnv = (): void => {
   if (missing.length > 0) {
     throw new Error(`Missing environment variables: ${missing.join(', ')}`);
   }
+
+  const databaseUrl = process.env.DATABASE_URL;
+
+  if (!databaseUrl) {
+    return;
+  }
+
+  let parsedDatabaseUrl: URL;
+
+  try {
+    parsedDatabaseUrl = new URL(databaseUrl);
+  } catch {
+    throw new Error('DATABASE_URL is invalid. Expected a valid PostgreSQL URL.');
+  }
+
+  const allowedProtocols = new Set(['postgresql:', 'postgres:']);
+
+  if (!allowedProtocols.has(parsedDatabaseUrl.protocol)) {
+    throw new Error(
+      `DATABASE_URL protocol must be postgresql or postgres. Received: ${parsedDatabaseUrl.protocol}`,
+    );
+  }
+
+  if (!parsedDatabaseUrl.hostname) {
+    throw new Error('DATABASE_URL must include a hostname.');
+  }
 };

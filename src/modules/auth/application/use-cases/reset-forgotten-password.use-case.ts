@@ -1,9 +1,13 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
-import { VerificationPurpose } from '@prisma/client';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AUTH_USER_REPOSITORY } from '../../domain/repositories/auth-user.repository';
 import type { IAuthUserRepository } from '../../domain/repositories/auth-user.repository';
 import { PasswordHasherService } from '../../infrastructure/services/password-hasher.service';
-import { VerifyVerificationCodeUseCase } from '../../../verification/application/use-cases/verify-verification-code.use-case';
+import { TokenService } from '../../infrastructure/services/token.service';
 
 @Injectable()
 export class ResetForgottenPasswordUseCase {
@@ -11,25 +15,38 @@ export class ResetForgottenPasswordUseCase {
     @Inject(AUTH_USER_REPOSITORY)
     private readonly authUserRepository: IAuthUserRepository,
     private readonly passwordHasherService: PasswordHasherService,
-    private readonly verifyVerificationCodeUseCase: VerifyVerificationCodeUseCase,
+    private readonly tokenService: TokenService,
   ) {}
 
   async execute(input: {
     email: string;
-    otpCode: string;
+    resetToken: string;
     newPassword: string;
+    confirmPassword: string;
   }): Promise<{ success: boolean }> {
-    const user = await this.authUserRepository.findByEmail(input.email);
-
-    if (!user || !user.isActive) {
-      throw new UnauthorizedException('Invalid or expired reset code');
+    if (input.newPassword !== input.confirmPassword) {
+      throw new BadRequestException('Passwords do not match');
     }
 
-    await this.verifyVerificationCodeUseCase.execute({
-      purpose: VerificationPurpose.FORGOT_PASSWORD,
-      email: input.email,
-      code: input.otpCode,
-    });
+    let payload: { userId: string; email: string };
+
+    try {
+      payload = await this.tokenService.verifyForgotPasswordResetToken(
+        input.resetToken,
+      );
+    } catch {
+      throw new UnauthorizedException('Invalid or expired reset token');
+    }
+
+    if (payload.email.toLowerCase() !== input.email.toLowerCase()) {
+      throw new UnauthorizedException('Reset token does not match email');
+    }
+
+    const user = await this.authUserRepository.findById(payload.userId);
+
+    if (!user || !user.isActive) {
+      throw new UnauthorizedException('Invalid or expired reset token');
+    }
 
     const newPasswordHash = this.passwordHasherService.hash(input.newPassword);
 
