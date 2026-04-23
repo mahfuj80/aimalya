@@ -5,10 +5,7 @@ import {
   VerificationStatus,
 } from '@prisma/client';
 import { IVerificationCodeRepository } from '../../domain/repositories/verification-code.repository';
-import {
-  SendVerificationCodeUseCase,
-  hashVerificationCode,
-} from './send-verification-code.use-case';
+import { hashVerificationCode } from './send-verification-code.use-case';
 import { VerifyVerificationCodeUseCase } from './verify-verification-code.use-case';
 
 describe('VerifyVerificationCodeUseCase', () => {
@@ -51,7 +48,9 @@ describe('VerifyVerificationCodeUseCase', () => {
       }),
     ).resolves.toEqual({ success: true });
 
-    expect(repo.markVerifiedAndConsumed).toHaveBeenCalledWith('vc1');
+    expect(repo.markVerifiedAndConsumed.mock.calls).toEqual(
+      expect.arrayContaining([['vc1']]),
+    );
   });
 
   it('fails and increments attempts for invalid code', async () => {
@@ -85,6 +84,8 @@ describe('VerifyVerificationCodeUseCase', () => {
       }),
     ).rejects.toBeInstanceOf(UnauthorizedException);
 
-    expect(repo.incrementAttempts).toHaveBeenCalledWith('vc1');
+    expect(repo.incrementAttempts.mock.calls).toEqual(
+      expect.arrayContaining([['vc1']]),
+    );
   });
 });

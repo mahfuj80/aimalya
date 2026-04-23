@@ -1,6 +1,13 @@
 import { VerificationPurpose } from '@prisma/client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsEnum, IsOptional, IsString, Length, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsEnum,
+  IsOptional,
+  IsString,
+  Length,
+  MinLength,
+} from 'class-validator';
 
 export class VerifyVerificationCodeRequestDto {
   @ApiProperty({ enum: VerificationPurpose })

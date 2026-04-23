@@ -54,7 +54,9 @@ describe('AddBusinessMemberUseCase', () => {
     const userRepo: IUserRepository = {
       findById: jest
         .fn()
-        .mockResolvedValue(new UserEntity('u2', 'member@mail.com', [UserRole.USER], true)),
+        .mockResolvedValue(
+          new UserEntity('u2', 'member@mail.com', [UserRole.USER], true),
+        ),
       findAll: jest.fn(),
       updateProfile: jest.fn(),
     };
@@ -118,7 +120,9 @@ describe('AddBusinessMemberUseCase', () => {
     const userRepo: IUserRepository = {
       findById: jest
         .fn()
-        .mockResolvedValue(new UserEntity('u2', 'member@mail.com', [UserRole.USER], true)),
+        .mockResolvedValue(
+          new UserEntity('u2', 'member@mail.com', [UserRole.USER], true),
+        ),
       findAll: jest.fn(),
       updateProfile: jest.fn(),
     };

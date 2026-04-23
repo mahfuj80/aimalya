@@ -44,10 +44,11 @@ export class AddBusinessMemberUseCase {
       throw new NotFoundException('User not found');
     }
 
-    const existingMembership = await this.businessMemberRepository.findMembership(
-      input.businessId,
-      input.userId,
-    );
+    const existingMembership =
+      await this.businessMemberRepository.findMembership(
+        input.businessId,
+        input.userId,
+      );
 
     if (existingMembership) {
       throw new ConflictException('User is already a member of this business');

@@ -9,9 +9,7 @@ import { VerificationCodeEntity } from '../../domain/entities/verification-code.
 import { IVerificationCodeRepository } from '../../domain/repositories/verification-code.repository';
 
 @Injectable()
-export class PrismaVerificationCodeRepository
-  implements IVerificationCodeRepository
-{
+export class PrismaVerificationCodeRepository implements IVerificationCodeRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   private toEntity(model: VerificationCode): VerificationCodeEntity {

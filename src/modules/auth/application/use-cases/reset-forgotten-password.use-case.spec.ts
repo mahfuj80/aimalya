@@ -93,7 +93,9 @@ describe('ResetForgottenPasswordUseCase', () => {
     const tokenService: Pick<TokenService, 'verifyForgotPasswordResetToken'> = {
       verifyForgotPasswordResetToken: jest
         .fn()
-        .mockRejectedValue(new UnauthorizedException('Invalid or expired reset token')),
+        .mockRejectedValue(
+          new UnauthorizedException('Invalid or expired reset token'),
+        ),
     };
 
     const useCase = new ResetForgottenPasswordUseCase(

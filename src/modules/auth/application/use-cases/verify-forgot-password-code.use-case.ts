@@ -30,10 +30,12 @@ export class VerifyForgotPasswordCodeUseCase {
       code: input.otpCode,
     });
 
-    const resetToken = await this.tokenService.generateForgotPasswordResetToken({
-      userId: user.id,
-      email: user.email,
-    });
+    const resetToken = await this.tokenService.generateForgotPasswordResetToken(
+      {
+        userId: user.id,
+        email: user.email,
+      },
+    );
 
     return {
       success: true,

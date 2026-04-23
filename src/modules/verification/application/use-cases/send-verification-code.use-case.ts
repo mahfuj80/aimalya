@@ -55,8 +55,10 @@ export class SendVerificationCodeUseCase {
       throw new BadRequestException('Email or phone number is required');
     }
 
-    const ttlMinutes = input.ttlMinutes ?? SendVerificationCodeUseCase.DEFAULT_TTL_MINUTES;
-    const maxAttempts = input.maxAttempts ?? SendVerificationCodeUseCase.DEFAULT_MAX_ATTEMPTS;
+    const ttlMinutes =
+      input.ttlMinutes ?? SendVerificationCodeUseCase.DEFAULT_TTL_MINUTES;
+    const maxAttempts =
+      input.maxAttempts ?? SendVerificationCodeUseCase.DEFAULT_MAX_ATTEMPTS;
 
     const code = randomInt(0, 1000000).toString().padStart(6, '0');
     const codeHash = hashVerificationCode(code);

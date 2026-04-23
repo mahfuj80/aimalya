@@ -31,7 +31,10 @@ export class BusinessController {
 
   @Post('owner/:ownerUserId')
   @ApiOperation({ summary: 'Create a business for an owner user' })
-  @ApiParam({ name: 'ownerUserId', example: '3b1f8c22-930f-4b6d-8ac4-d54c5988e6d3' })
+  @ApiParam({
+    name: 'ownerUserId',
+    example: '3b1f8c22-930f-4b6d-8ac4-d54c5988e6d3',
+  })
   @ApiCreatedResponse({ type: BusinessResponseDto })
   async createBusiness(
     @Param('ownerUserId') ownerUserId: string,
@@ -61,7 +64,10 @@ export class BusinessController {
 
   @Get('owner/:ownerUserId')
   @ApiOperation({ summary: 'List businesses by owner user id' })
-  @ApiParam({ name: 'ownerUserId', example: '3b1f8c22-930f-4b6d-8ac4-d54c5988e6d3' })
+  @ApiParam({
+    name: 'ownerUserId',
+    example: '3b1f8c22-930f-4b6d-8ac4-d54c5988e6d3',
+  })
   @ApiOkResponse({ type: BusinessResponseDto, isArray: true })
   async listBusinessesByOwner(
     @Param('ownerUserId') ownerUserId: string,
@@ -73,7 +79,10 @@ export class BusinessController {
 
   @Post(':businessId/members')
   @ApiOperation({ summary: 'Add a member to a business' })
-  @ApiParam({ name: 'businessId', example: 'd32f30f8-0051-4c6f-9f85-d94acaa3fd50' })
+  @ApiParam({
+    name: 'businessId',
+    example: 'd32f30f8-0051-4c6f-9f85-d94acaa3fd50',
+  })
   @ApiCreatedResponse({ type: BusinessMemberResponseDto })
   async addBusinessMember(
     @Param('businessId') businessId: string,
@@ -91,7 +100,10 @@ export class BusinessController {
 
   @Get(':businessId/members')
   @ApiOperation({ summary: 'List members assigned to a business' })
-  @ApiParam({ name: 'businessId', example: 'd32f30f8-0051-4c6f-9f85-d94acaa3fd50' })
+  @ApiParam({
+    name: 'businessId',
+    example: 'd32f30f8-0051-4c6f-9f85-d94acaa3fd50',
+  })
   @ApiOkResponse({ type: BusinessMemberResponseDto, isArray: true })
   async listBusinessMembers(
     @Param('businessId') businessId: string,

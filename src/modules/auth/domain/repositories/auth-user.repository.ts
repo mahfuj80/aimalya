@@ -6,6 +6,7 @@ export interface IAuthUserRepository {
   findByEmail(email: string): Promise<AuthUserEntity | null>;
   findById(id: string): Promise<AuthUserEntity | null>;
   create(input: {
+    fullName?: string;
     email: string;
     passwordHash: string;
     roles: string[];

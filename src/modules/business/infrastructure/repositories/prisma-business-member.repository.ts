@@ -41,7 +41,7 @@ export class PrismaBusinessMemberRepository implements IBusinessMemberRepository
       data: {
         businessId: input.businessId,
         userId: input.userId,
-        role: input.role as PrismaBusinessMembershipRole,
+        role: input.role,
         isPrimary: input.isPrimary ?? false,
       },
     });

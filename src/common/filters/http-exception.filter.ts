@@ -29,7 +29,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     const logMessage = `${request.method} ${request.url} -> ${status} ${message}`;
 
-    if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
+    if (status >= 500) {
       this.logger.error(
         logMessage,
         exception instanceof Error ? exception.stack : undefined,

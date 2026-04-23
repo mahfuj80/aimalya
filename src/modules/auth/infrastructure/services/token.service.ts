@@ -97,12 +97,10 @@ export class TokenService {
     email: string;
   }> {
     const secret = process.env.JWT_ACCESS_SECRET ?? '';
-    const payload = await this.jwtService.verifyAsync<PasswordResetTokenPayload>(
-      token,
-      {
+    const payload =
+      await this.jwtService.verifyAsync<PasswordResetTokenPayload>(token, {
         secret,
-      },
-    );
+      });
 
     if (payload.purpose !== 'FORGOT_PASSWORD_RESET') {
       throw new Error('Invalid token purpose');

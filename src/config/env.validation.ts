@@ -39,7 +39,9 @@ export const validateEnv = (): void => {
   try {
     parsedDatabaseUrl = new URL(databaseUrl);
   } catch {
-    throw new Error('DATABASE_URL is invalid. Expected a valid PostgreSQL URL.');
+    throw new Error(
+      'DATABASE_URL is invalid. Expected a valid PostgreSQL URL.',
+    );
   }
 
   const allowedProtocols = new Set(['postgresql:', 'postgres:']);

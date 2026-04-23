@@ -101,6 +101,7 @@ enum VerificationStatus {
 
 model User {
   id                         String     @id @default(uuid())
+  fullName                   String?
   email                      String     @unique
   passwordHash               String
   roles                      UserRole[]

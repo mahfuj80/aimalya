@@ -23,7 +23,9 @@ export class ResendVerificationCodeUseCase {
     private readonly verificationCodeRepository: IVerificationCodeRepository,
   ) {}
 
-  async execute(input: ResendVerificationCodeInput): Promise<{ code: string; expiresAt: Date }> {
+  async execute(
+    input: ResendVerificationCodeInput,
+  ): Promise<{ code: string; expiresAt: Date }> {
     if (!input.email && !input.phoneNumber) {
       throw new BadRequestException('Email or phone number is required');
     }

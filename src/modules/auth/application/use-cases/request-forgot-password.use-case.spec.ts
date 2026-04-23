@@ -38,7 +38,10 @@ describe('RequestForgotPasswordUseCase', () => {
       execute: jest.fn().mockResolvedValue({ success: true }),
     };
 
-    const sendVerificationCodeUseCase: Pick<SendVerificationCodeUseCase, 'execute'> = {
+    const sendVerificationCodeUseCase: Pick<
+      SendVerificationCodeUseCase,
+      'execute'
+    > = {
       execute: jest.fn().mockResolvedValue({
         code: '123456',
         expiresAt: new Date(Date.now() + 10 * 60 * 1000),
@@ -74,7 +77,10 @@ describe('RequestForgotPasswordUseCase', () => {
       execute: jest.fn().mockResolvedValue({ success: true }),
     };
 
-    const sendVerificationCodeUseCase: Pick<SendVerificationCodeUseCase, 'execute'> = {
+    const sendVerificationCodeUseCase: Pick<
+      SendVerificationCodeUseCase,
+      'execute'
+    > = {
       execute: jest.fn(),
     };
 

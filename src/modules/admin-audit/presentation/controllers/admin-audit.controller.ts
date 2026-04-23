@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
@@ -58,17 +66,27 @@ export class AdminAuditController {
 
   @Get('actor/:actorUserId')
   @ApiOperation({ summary: 'List admin audit logs by actor user id' })
-  @ApiParam({ name: 'actorUserId', example: '3b1f8c22-930f-4b6d-8ac4-d54c5988e6d3' })
+  @ApiParam({
+    name: 'actorUserId',
+    example: '3b1f8c22-930f-4b6d-8ac4-d54c5988e6d3',
+  })
   @ApiOkResponse({ type: AdminAuditLogResponseDto, isArray: true })
-  listByActor(@Param('actorUserId') actorUserId: string): Promise<AdminAuditLogResponseDto[]> {
+  listByActor(
+    @Param('actorUserId') actorUserId: string,
+  ): Promise<AdminAuditLogResponseDto[]> {
     return this.listAdminAuditLogsUseCase.executeByActor(actorUserId);
   }
 
   @Get('business/:businessId')
   @ApiOperation({ summary: 'List admin audit logs by business id' })
-  @ApiParam({ name: 'businessId', example: 'd32f30f8-0051-4c6f-9f85-d94acaa3fd50' })
+  @ApiParam({
+    name: 'businessId',
+    example: 'd32f30f8-0051-4c6f-9f85-d94acaa3fd50',
+  })
   @ApiOkResponse({ type: AdminAuditLogResponseDto, isArray: true })
-  listByBusiness(@Param('businessId') businessId: string): Promise<AdminAuditLogResponseDto[]> {
+  listByBusiness(
+    @Param('businessId') businessId: string,
+  ): Promise<AdminAuditLogResponseDto[]> {
     return this.listAdminAuditLogsUseCase.executeByBusiness(businessId);
   }
 }

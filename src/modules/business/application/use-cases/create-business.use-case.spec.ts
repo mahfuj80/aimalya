@@ -12,7 +12,9 @@ describe('CreateBusinessUseCase', () => {
       create: jest
         .fn()
         .mockImplementation(
-          async (input) =>
+          (
+            input: Parameters<IBusinessRepository['create']>[0],
+          ): Promise<BusinessEntity> =>
             new BusinessEntity(
               'b1',
               input.name,

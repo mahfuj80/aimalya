@@ -26,7 +26,7 @@ export class PrismaRoleRepository implements IRoleRepository {
     const user = await this.prisma.user.update({
       where: { id: userId },
       data: {
-        roles: roles as PrismaUserRole[],
+        roles: roles,
       },
     });
 

@@ -1,5 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 import { BusinessMembershipRole } from '../../../../core/enums/business-membership-role.enum';
 
 export class AddBusinessMemberRequestDto {
@@ -8,7 +14,10 @@ export class AddBusinessMemberRequestDto {
   @MinLength(1)
   userId!: string;
 
-  @ApiProperty({ enum: BusinessMembershipRole, example: BusinessMembershipRole.MANAGER })
+  @ApiProperty({
+    enum: BusinessMembershipRole,
+    example: BusinessMembershipRole.MANAGER,
+  })
   @IsEnum(BusinessMembershipRole)
   role!: BusinessMembershipRole;
 

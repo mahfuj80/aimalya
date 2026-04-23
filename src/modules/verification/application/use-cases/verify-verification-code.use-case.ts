@@ -23,7 +23,9 @@ export class VerifyVerificationCodeUseCase {
     private readonly verificationCodeRepository: IVerificationCodeRepository,
   ) {}
 
-  async execute(input: VerifyVerificationCodeInput): Promise<{ success: boolean }> {
+  async execute(
+    input: VerifyVerificationCodeInput,
+  ): Promise<{ success: boolean }> {
     if (!input.email && !input.phoneNumber) {
       throw new BadRequestException('Email or phone number is required');
     }
@@ -36,24 +38,35 @@ export class VerifyVerificationCodeUseCase {
 
     if (!code || code.expiresAt < new Date()) {
       if (code && code.status === VerificationStatus.PENDING) {
-        await this.verificationCodeRepository.updateStatus(code.id, VerificationStatus.EXPIRED);
+        await this.verificationCodeRepository.updateStatus(
+          code.id,
+          VerificationStatus.EXPIRED,
+        );
       }
 
       throw new UnauthorizedException('Invalid or expired verification code');
     }
 
     if (code.attempts >= code.maxAttempts) {
-      await this.verificationCodeRepository.updateStatus(code.id, VerificationStatus.CANCELED);
+      await this.verificationCodeRepository.updateStatus(
+        code.id,
+        VerificationStatus.CANCELED,
+      );
       throw new UnauthorizedException('Invalid or expired verification code');
     }
 
     const isValid = verifyVerificationCodeHash(input.code, code.codeHash);
 
     if (!isValid) {
-      const updated = await this.verificationCodeRepository.incrementAttempts(code.id);
+      const updated = await this.verificationCodeRepository.incrementAttempts(
+        code.id,
+      );
 
       if (updated.attempts >= updated.maxAttempts) {
-        await this.verificationCodeRepository.updateStatus(code.id, VerificationStatus.CANCELED);
+        await this.verificationCodeRepository.updateStatus(
+          code.id,
+          VerificationStatus.CANCELED,
+        );
       }
 
       throw new UnauthorizedException('Invalid or expired verification code');

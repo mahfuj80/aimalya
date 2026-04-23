@@ -51,12 +51,16 @@ export class VerificationController {
       },
     },
   })
-  verify(@Body() dto: VerifyVerificationCodeRequestDto): Promise<{ success: boolean }> {
+  verify(
+    @Body() dto: VerifyVerificationCodeRequestDto,
+  ): Promise<{ success: boolean }> {
     return this.verifyVerificationCodeUseCase.execute(dto);
   }
 
   @Post('resend')
-  @ApiOperation({ summary: 'Cancel pending code and send a replacement verification code' })
+  @ApiOperation({
+    summary: 'Cancel pending code and send a replacement verification code',
+  })
   @ApiCreatedResponse({
     schema: {
       example: {

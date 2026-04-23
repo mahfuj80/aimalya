@@ -111,12 +111,7 @@ export class AuthController {
   resetForgottenPassword(
     @Body() dto: ResetForgottenPasswordRequestDto,
   ): Promise<{ success: boolean }> {
-    return this.resetForgottenPasswordUseCase.execute({
-      email: dto.email,
-      resetToken: dto.resetToken,
-      newPassword: dto.newPassword,
-      confirmPassword: dto.confirmPassword,
-    });
+    return this.resetForgottenPasswordUseCase.execute(dto);
   }
 
   @Post('password/change')

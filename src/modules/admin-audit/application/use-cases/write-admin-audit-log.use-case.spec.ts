@@ -32,7 +32,9 @@ describe('WriteAdminAuditLogUseCase', () => {
     const userRepo: IUserRepository = {
       findById: jest
         .fn()
-        .mockResolvedValue(new UserEntity('u1', 'admin@mail.com', [UserRole.ADMIN], true)),
+        .mockResolvedValue(
+          new UserEntity('u1', 'admin@mail.com', [UserRole.ADMIN], true),
+        ),
       findAll: jest.fn(),
       updateProfile: jest.fn(),
     };
@@ -65,7 +67,10 @@ describe('WriteAdminAuditLogUseCase', () => {
     const useCase = new WriteAdminAuditLogUseCase(auditRepo, userRepo);
 
     await expect(
-      useCase.execute({ actorUserId: 'missing', action: 'AUTH_ADMIN_ONLY_CHECK' }),
+      useCase.execute({
+        actorUserId: 'missing',
+        action: 'AUTH_ADMIN_ONLY_CHECK',
+      }),
     ).rejects.toBeInstanceOf(NotFoundException);
   });
 });

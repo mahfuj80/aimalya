@@ -40,11 +40,12 @@ describe('VerifyForgotPasswordCodeUseCase', () => {
       execute: jest.fn().mockResolvedValue({ success: true }),
     };
 
-    const tokenService: Pick<TokenService, 'generateForgotPasswordResetToken'> = {
-      generateForgotPasswordResetToken: jest
-        .fn()
-        .mockResolvedValue('generated-reset-token'),
-    };
+    const tokenService: Pick<TokenService, 'generateForgotPasswordResetToken'> =
+      {
+        generateForgotPasswordResetToken: jest
+          .fn()
+          .mockResolvedValue('generated-reset-token'),
+      };
 
     const useCase = new VerifyForgotPasswordCodeUseCase(
       repo,
@@ -85,9 +86,10 @@ describe('VerifyForgotPasswordCodeUseCase', () => {
       execute: jest.fn(),
     };
 
-    const tokenService: Pick<TokenService, 'generateForgotPasswordResetToken'> = {
-      generateForgotPasswordResetToken: jest.fn(),
-    };
+    const tokenService: Pick<TokenService, 'generateForgotPasswordResetToken'> =
+      {
+        generateForgotPasswordResetToken: jest.fn(),
+      };
 
     const useCase = new VerifyForgotPasswordCodeUseCase(
       repo,

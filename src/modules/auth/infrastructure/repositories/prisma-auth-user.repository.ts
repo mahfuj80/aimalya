@@ -51,12 +51,14 @@ export class PrismaAuthUserRepository implements IAuthUserRepository {
   }
 
   async create(input: {
+    fullName?: string;
     email: string;
     passwordHash: string;
     roles: string[];
   }): Promise<AuthUserEntity> {
     const created = await this.prisma.user.create({
       data: {
+        fullName: input.fullName,
         email: input.email,
         passwordHash: input.passwordHash,
         roles: input.roles as UserRole[],
