@@ -21,8 +21,10 @@ describe('RegisterUseCase', () => {
   const createBusinessRepo = (): jest.Mocked<IBusinessRepository> => ({
     create: jest.fn(),
     findById: jest.fn(),
+    findAll: jest.fn(),
     findBySlug: jest.fn(),
     findByOwnerUserId: jest.fn(),
+    update: jest.fn(),
   });
 
   it('creates user and initial business on register', async () => {

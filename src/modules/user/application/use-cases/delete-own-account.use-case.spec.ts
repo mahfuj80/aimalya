@@ -2,10 +2,12 @@ import { NotFoundException } from '@nestjs/common';
 import { UserRole } from '../../../../core/enums/role.enum';
 import { UserEntity } from '../../domain/entities/user.entity';
 import { IUserRepository } from '../../domain/repositories/user.repository';
-import { GetUserByIdUseCase } from './get-user-by-id.use-case';
+import { DeleteOwnAccountUseCase } from './delete-own-account.use-case';
 
-describe('GetUserByIdUseCase', () => {
-  it('returns a user when found', async () => {
+describe('DeleteOwnAccountUseCase', () => {
+  it('deactivates existing user account', async () => {
+    const deactivateById = jest.fn().mockResolvedValue(true);
+
     const repo: IUserRepository = {
       findById: jest
         .fn()
@@ -14,13 +16,14 @@ describe('GetUserByIdUseCase', () => {
         ),
       findAll: jest.fn(),
       updateProfile: jest.fn(),
-      deactivateById: jest.fn(),
+      deactivateById,
     };
 
-    const useCase = new GetUserByIdUseCase(repo);
+    const useCase = new DeleteOwnAccountUseCase(repo);
     const result = await useCase.execute('u1');
 
-    expect(result.id).toBe('u1');
+    expect(result.success).toBe(true);
+    expect(deactivateById).toHaveBeenCalledWith('u1');
   });
 
   it('throws when user does not exist', async () => {
@@ -31,7 +34,7 @@ describe('GetUserByIdUseCase', () => {
       deactivateById: jest.fn(),
     };
 
-    const useCase = new GetUserByIdUseCase(repo);
+    const useCase = new DeleteOwnAccountUseCase(repo);
 
     await expect(useCase.execute('missing')).rejects.toBeInstanceOf(
       NotFoundException,

@@ -66,4 +66,24 @@ export class PrismaUserRepository implements IUserRepository {
       updated.isActive,
     );
   }
+
+  async deactivateById(id: string): Promise<boolean> {
+    const existing = await this.prisma.user.findUnique({ where: { id } });
+
+    if (!existing) {
+      return false;
+    }
+
+    await this.prisma.user.update({
+      where: { id },
+      data: {
+        isActive: false,
+        refreshTokenHash: null,
+        passwordResetCodeHash: null,
+        passwordResetCodeExpiresAt: null,
+      },
+    });
+
+    return true;
+  }
 }

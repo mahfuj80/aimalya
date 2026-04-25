@@ -30,8 +30,10 @@ describe('CreateBusinessUseCase', () => {
             ),
         ),
       findById: jest.fn(),
+      findAll: jest.fn(),
       findBySlug: jest.fn().mockResolvedValue(null),
       findByOwnerUserId: jest.fn(),
+      update: jest.fn(),
     };
 
     const userRepo: IUserRepository = {
@@ -58,8 +60,10 @@ describe('CreateBusinessUseCase', () => {
     const businessRepo: IBusinessRepository = {
       create: jest.fn(),
       findById: jest.fn(),
+      findAll: jest.fn(),
       findBySlug: jest.fn(),
       findByOwnerUserId: jest.fn(),
+      update: jest.fn(),
     };
 
     const userRepo: IUserRepository = {

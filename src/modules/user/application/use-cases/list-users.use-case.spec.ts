@@ -14,6 +14,7 @@ describe('ListUsersUseCase', () => {
           new UserEntity('u2', 'u2@mail.com', [UserRole.ADMIN], true),
         ]),
       updateProfile: jest.fn(),
+      deactivateById: jest.fn(),
     };
 
     const useCase = new ListUsersUseCase(repo);
@@ -27,6 +28,7 @@ describe('ListUsersUseCase', () => {
       findById: jest.fn(),
       findAll: jest.fn().mockResolvedValue([]),
       updateProfile: jest.fn(),
+      deactivateById: jest.fn(),
     };
 
     const useCase = new ListUsersUseCase(repo);

@@ -13,72 +13,6 @@ enum UserRole {
   USER
 }
 
-enum BusinessMembershipRole {
-  OWNER
-  MANAGER
-  ANALYST
-}
-
-enum ReviewSourcePlatform {
-  GOOGLE
-  FACEBOOK
-  YELP
-  TRIPADVISOR
-  UBER_EATS
-  FOODPANDA
-  OTHER
-}
-
-enum ReviewSentiment {
-  POSITIVE
-  NEUTRAL
-  NEGATIVE
-}
-
-enum QuickInsightType {
-  LOVE
-  DISLIKE
-  OPPORTUNITY
-}
-
-enum RecommendationPriority {
-  LOW
-  MEDIUM
-  HIGH
-}
-
-enum RecommendationStatus {
-  OPEN
-  IN_PROGRESS
-  DONE
-  DISMISSED
-}
-
-enum TrendDirection {
-  UP
-  DOWN
-  STABLE
-}
-
-enum SubscriptionPlan {
-  STARTER
-  GROWTH
-  ENTERPRISE
-}
-
-enum SubscriptionStatus {
-  TRIALING
-  ACTIVE
-  PAST_DUE
-  CANCELED
-  EXPIRED
-}
-
-enum BillingInterval {
-  MONTHLY
-  YEARLY
-}
-
 enum NotificationChannel {
   IN_APP
   EMAIL
@@ -112,12 +46,11 @@ model User {
   createdAt                  DateTime   @default(now())
   updatedAt                  DateTime   @updatedAt
 
-  createdBusinesses   Business[]           @relation("BusinessOwner")
-  businessMemberships BusinessMember[]
-  notifications       Notification[]
-  payments            PaymentTransaction[]
-  verificationCodes   VerificationCode[]
-  adminAuditLogs      AdminAuditLog[]      @relation("AdminAuditActor")
+  createdBusinesses Business[]          @relation("BusinessOwner")
+  notifications     Notification[]
+  payments          PaymentTransaction[]
+  verificationCodes VerificationCode[]
+  adminAuditLogs    AdminAuditLog[]     @relation("AdminAuditActor")
 }
 
 model Business {
@@ -133,198 +66,19 @@ model Business {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  ownerUser        User                   @relation("BusinessOwner", fields: [ownerUserId], references: [id])
-  members          BusinessMember[]
-  reviewSources    ReviewSource[]
-  reviews          Review[]
-  insightSnapshots InsightSnapshot[]
-  recommendations  Recommendation[]
-  trendSignals     TrendSignal[]
-  subscriptions    BusinessSubscription[]
-  payments         PaymentTransaction[]
-  notifications    Notification[]
-  adminAuditLogs   AdminAuditLog[]
+  ownerUser       User                 @relation("BusinessOwner", fields: [ownerUserId], references: [id])
+  payments        PaymentTransaction[]
+  notifications   Notification[]
+  adminAuditLogs  AdminAuditLog[]
 
   @@index([ownerUserId])
   @@index([isActive])
-}
-
-model BusinessMember {
-  id         String                 @id @default(uuid())
-  businessId String
-  userId     String
-  role       BusinessMembershipRole
-  isPrimary  Boolean                @default(false)
-  joinedAt   DateTime               @default(now())
-
-  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([businessId, userId])
-  @@index([userId])
-}
-
-model ReviewSource {
-  id                 String               @id @default(uuid())
-  businessId         String
-  platform           ReviewSourcePlatform
-  externalLocationId String?
-  externalAccountId  String?
-  displayName        String?
-  sourceUrl          String?
-  isActive           Boolean              @default(true)
-  lastSyncedAt       DateTime?
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
-
-  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  reviews  Review[]
-
-  @@index([businessId])
-  @@index([platform])
-}
-
-model Review {
-  id               String           @id @default(uuid())
-  businessId       String
-  sourceId         String?
-  externalReviewId String?
-  authorName       String?
-  rating           Int
-  title            String?
-  body             String
-  languageCode     String           @default("en")
-  reviewedAt       DateTime
-  ingestedAt       DateTime         @default(now())
-  sentiment        ReviewSentiment?
-  sentimentScore   Decimal?         @db.Decimal(5, 2)
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-
-  business       Business              @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  source         ReviewSource?         @relation(fields: [sourceId], references: [id], onDelete: SetNull)
-  categoryScores ReviewCategoryScore[]
-
-  @@unique([sourceId, externalReviewId])
-  @@index([businessId, reviewedAt])
-  @@index([sourceId])
-}
-
-model ReviewCategoryScore {
-  id        String   @id @default(uuid())
-  reviewId  String
-  category  String
-  score     Decimal  @db.Decimal(5, 2)
-  createdAt DateTime @default(now())
-
-  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
-
-  @@unique([reviewId, category])
-}
-
-model InsightSnapshot {
-  id                String   @id @default(uuid())
-  businessId        String
-  snapshotDate      DateTime
-  healthScore       Int
-  summary           String?
-  sourceReviewCount Int      @default(0)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  business        Business               @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  categoryScores  InsightCategoryScore[]
-  quickInsights   QuickInsight[]
-  recommendations Recommendation[]
-  trendSignals    TrendSignal[]
-
-  @@unique([businessId, snapshotDate])
-  @@index([businessId])
-}
-
-model InsightCategoryScore {
-  id         String  @id @default(uuid())
-  snapshotId String
-  category   String
-  score      Decimal @db.Decimal(5, 2)
-
-  snapshot InsightSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
-
-  @@unique([snapshotId, category])
-}
-
-model QuickInsight {
-  id          String           @id @default(uuid())
-  snapshotId  String
-  type        QuickInsightType
-  title       String
-  description String
-  createdAt   DateTime         @default(now())
-
-  snapshot InsightSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
-
-  @@index([snapshotId, type])
-}
-
-model Recommendation {
-  id              String                 @id @default(uuid())
-  businessId      String
-  snapshotId      String?
-  title           String
-  description     String
-  evidence        String?
-  businessImpact  String?
-  improvementPlan String?
-  priority        RecommendationPriority @default(MEDIUM)
-  status          RecommendationStatus   @default(OPEN)
-  createdAt       DateTime               @default(now())
-  updatedAt       DateTime               @updatedAt
-
-  business Business         @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  snapshot InsightSnapshot? @relation(fields: [snapshotId], references: [id], onDelete: SetNull)
-
-  @@index([businessId, status, priority])
-}
-
-model TrendSignal {
-  id          String         @id @default(uuid())
-  businessId  String
-  snapshotId  String?
-  title       String
-  description String
-  direction   TrendDirection
-  createdAt   DateTime       @default(now())
-
-  business Business         @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  snapshot InsightSnapshot? @relation(fields: [snapshotId], references: [id], onDelete: SetNull)
-
-  @@index([businessId, direction])
-}
-
-model BusinessSubscription {
-  id          String             @id @default(uuid())
-  businessId  String
-  plan        SubscriptionPlan
-  status      SubscriptionStatus
-  interval    BillingInterval
-  startDate   DateTime
-  endDate     DateTime?
-  trialEndsAt DateTime?
-  cancelAt    DateTime?
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-
-  business Business             @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  payments PaymentTransaction[]
-
-  @@index([businessId, status])
 }
 
 model PaymentTransaction {
   id               String   @id @default(uuid())
   businessId       String
   userId           String?
-  subscriptionId   String?
   provider         String   @default("STRIPE")
   providerIntentId String?  @unique
   amountCents      Int
@@ -335,9 +89,8 @@ model PaymentTransaction {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
-  business     Business              @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  user         User?                 @relation(fields: [userId], references: [id], onDelete: SetNull)
-  subscription BusinessSubscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user     User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([businessId, createdAt])
   @@index([userId])

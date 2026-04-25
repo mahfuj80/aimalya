@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -22,6 +23,7 @@ import { JwtAuthGuard } from '../../../auth/infrastructure/services/jwt-auth.gua
 import { UpdateProfileRequestDto } from '../../application/dto/update-profile.request.dto';
 import { UpdateUserProfileUseCase } from '../../application/use-cases/update-user-profile.use-case';
 import { UserRole } from '../../../../core/enums/role.enum';
+import { DeleteOwnAccountUseCase } from '../../application/use-cases/delete-own-account.use-case';
 
 type AuthenticatedRequest = {
   user: {
@@ -38,6 +40,7 @@ export class UserController {
     private readonly listUsersUseCase: ListUsersUseCase,
     private readonly getUserByIdUseCase: GetUserByIdUseCase,
     private readonly updateUserProfileUseCase: UpdateUserProfileUseCase,
+    private readonly deleteOwnAccountUseCase: DeleteOwnAccountUseCase,
   ) {}
 
   @Get()
@@ -72,5 +75,20 @@ export class UserController {
     );
 
     return UserDtoMapper.toResponse(user);
+  }
+
+  @Delete('me')
+  @ApiOperation({ summary: 'Delete authenticated user account' })
+  @ApiBearerAuth()
+  @ApiOkResponse({
+    schema: {
+      example: { success: true },
+    },
+  })
+  @UseGuards(JwtAuthGuard)
+  async deleteOwnAccount(
+    @Req() request: AuthenticatedRequest,
+  ): Promise<{ success: boolean }> {
+    return this.deleteOwnAccountUseCase.execute(request.user.id);
   }
 }

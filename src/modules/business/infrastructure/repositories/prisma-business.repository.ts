@@ -64,6 +64,14 @@ export class PrismaBusinessRepository implements IBusinessRepository {
     return model ? this.toEntity(model) : null;
   }
 
+  async findAll(): Promise<BusinessEntity[]> {
+    const models = await this.prisma.business.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return models.map((model) => this.toEntity(model));
+  }
+
   async findBySlug(slug: string): Promise<BusinessEntity | null> {
     const model = await this.prisma.business.findUnique({ where: { slug } });
     return model ? this.toEntity(model) : null;
@@ -76,5 +84,39 @@ export class PrismaBusinessRepository implements IBusinessRepository {
     });
 
     return models.map((model) => this.toEntity(model));
+  }
+
+  async update(
+    id: string,
+    input: {
+      name: string;
+      slug: string;
+      industry: string | null;
+      description: string | null;
+      timezone: string;
+      currency: string;
+      isActive: boolean;
+    },
+  ): Promise<BusinessEntity | null> {
+    const existing = await this.prisma.business.findUnique({ where: { id } });
+
+    if (!existing) {
+      return null;
+    }
+
+    const updated = await this.prisma.business.update({
+      where: { id },
+      data: {
+        name: input.name,
+        slug: input.slug,
+        industry: input.industry,
+        description: input.description,
+        timezone: input.timezone,
+        currency: input.currency,
+        isActive: input.isActive,
+      },
+    });
+
+    return this.toEntity(updated);
   }
 }

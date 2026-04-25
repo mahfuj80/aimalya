@@ -4,14 +4,15 @@ import { BUSINESS_REPOSITORY } from '../../domain/repositories/business.reposito
 import type { IBusinessRepository } from '../../domain/repositories/business.repository';
 
 @Injectable()
-export class GetBusinessByIdUseCase {
+export class GetBusinessByUserIdUseCase {
   constructor(
     @Inject(BUSINESS_REPOSITORY)
     private readonly businessRepository: IBusinessRepository,
   ) {}
 
-  async execute(id: string): Promise<BusinessEntity> {
-    const business = await this.businessRepository.findById(id);
+  async execute(userId: string): Promise<BusinessEntity> {
+    const businesses = await this.businessRepository.findByOwnerUserId(userId);
+    const business = businesses[0];
 
     if (!business) {
       throw new NotFoundException('Business not found');

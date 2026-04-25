@@ -18,6 +18,7 @@ describe('UpdateUserProfileUseCase', () => {
         .mockResolvedValue(
           new UserEntity('u1', 'new@mail.com', [UserRole.USER], true),
         ),
+      deactivateById: jest.fn(),
     };
 
     const useCase = new UpdateUserProfileUseCase(repo);
@@ -31,6 +32,7 @@ describe('UpdateUserProfileUseCase', () => {
       findById: jest.fn().mockResolvedValue(null),
       findAll: jest.fn(),
       updateProfile: jest.fn(),
+      deactivateById: jest.fn(),
     };
 
     const useCase = new UpdateUserProfileUseCase(repo);
@@ -51,6 +53,7 @@ describe('UpdateUserProfileUseCase', () => {
       updateProfile: jest
         .fn()
         .mockRejectedValue(new Error('Unique constraint failed')),
+      deactivateById: jest.fn(),
     };
 
     const useCase = new UpdateUserProfileUseCase(repo);
