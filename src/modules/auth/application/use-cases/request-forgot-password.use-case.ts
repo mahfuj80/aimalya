@@ -1,8 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { NotificationChannel, VerificationPurpose } from '@prisma/client';
+import { createHash, randomInt } from 'crypto';
 import { AUTH_USER_REPOSITORY } from '../../domain/repositories/auth-user.repository';
 import type { IAuthUserRepository } from '../../domain/repositories/auth-user.repository';
-import { SendVerificationCodeUseCase } from '../../../verification/application/use-cases/send-verification-code.use-case';
 import { SendPasswordResetEmailUseCase } from './send-password-reset-email.use-case';
 
 @Injectable()
@@ -12,9 +11,12 @@ export class RequestForgotPasswordUseCase {
   constructor(
     @Inject(AUTH_USER_REPOSITORY)
     private readonly authUserRepository: IAuthUserRepository,
-    private readonly sendVerificationCodeUseCase: SendVerificationCodeUseCase,
     private readonly sendPasswordResetEmailUseCase: SendPasswordResetEmailUseCase,
   ) {}
+
+  private static hashCode(code: string): string {
+    return createHash('sha256').update(code).digest('hex');
+  }
 
   async execute(input: { email: string }): Promise<{ success: boolean }> {
     const user = await this.authUserRepository.findByEmail(input.email);
@@ -23,13 +25,18 @@ export class RequestForgotPasswordUseCase {
       return { success: true };
     }
 
-    const { code, expiresAt } = await this.sendVerificationCodeUseCase.execute({
-      userId: user.id,
-      email: user.email,
-      purpose: VerificationPurpose.FORGOT_PASSWORD,
-      channel: NotificationChannel.EMAIL,
-      ttlMinutes: RequestForgotPasswordUseCase.RESET_CODE_EXPIRY_MINUTES,
-    });
+    const code = randomInt(0, 1000000).toString().padStart(6, '0');
+    const codeHash = RequestForgotPasswordUseCase.hashCode(code);
+    const expiresAt = new Date(
+      Date.now() +
+        RequestForgotPasswordUseCase.RESET_CODE_EXPIRY_MINUTES * 60 * 1000,
+    );
+
+    await this.authUserRepository.setPasswordResetCode(
+      user.id,
+      codeHash,
+      expiresAt,
+    );
 
     const expiryMinutes = Math.max(
       1,

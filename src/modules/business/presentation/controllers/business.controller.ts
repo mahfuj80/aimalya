@@ -25,15 +25,11 @@ import { GetAllBusinessesUseCase } from '../../application/use-cases/get-all-bus
 import { GetBusinessByUserIdUseCase } from '../../application/use-cases/get-business-by-user-id.use-case';
 import { UpdateBusinessUseCase } from '../../application/use-cases/update-business.use-case';
 import { JwtAuthGuard } from '../../../auth/infrastructure/services/jwt-auth.guard';
-import { Roles } from '../../../../common/decorators/roles.decorator';
-import { RolesGuard } from '../../../../common/guards/roles.guard';
-import { UserRole } from '../../../../core/enums/role.enum';
 
 type AuthenticatedRequest = {
   user: {
     id: string;
     email: string;
-    roles: UserRole[];
   };
 };
 
@@ -70,11 +66,10 @@ export class BusinessController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all businesses (admin only)' })
+  @ApiOperation({ summary: 'Get all businesses' })
   @ApiBearerAuth()
   @ApiOkResponse({ type: BusinessResponseDto, isArray: true })
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard)
   async getAllBusinesses(): Promise<BusinessResponseDto[]> {
     const businesses = await this.getAllBusinessesUseCase.execute();
     return businesses.map((item) => BusinessDtoMapper.toResponse(item));
@@ -105,7 +100,6 @@ export class BusinessController {
     const business = await this.updateBusinessUseCase.execute({
       businessId: id,
       actorUserId: request.user.id,
-      actorRoles: request.user.roles,
       name: dto.name,
       slug: dto.slug,
       industry: dto.industry,

@@ -1,18 +1,28 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
-import { VerificationPurpose } from '@prisma/client';
+import { createHash, timingSafeEqual } from 'crypto';
 import { AUTH_USER_REPOSITORY } from '../../domain/repositories/auth-user.repository';
 import type { IAuthUserRepository } from '../../domain/repositories/auth-user.repository';
 import { TokenService } from '../../infrastructure/services/token.service';
-import { VerifyVerificationCodeUseCase } from '../../../verification/application/use-cases/verify-verification-code.use-case';
 
 @Injectable()
 export class VerifyForgotPasswordCodeUseCase {
   constructor(
     @Inject(AUTH_USER_REPOSITORY)
     private readonly authUserRepository: IAuthUserRepository,
-    private readonly verifyVerificationCodeUseCase: VerifyVerificationCodeUseCase,
     private readonly tokenService: TokenService,
   ) {}
+
+  private verifyCodeHash(rawCode: string, storedHash: string): boolean {
+    const incomingHash = createHash('sha256').update(rawCode).digest('hex');
+    const incomingBuffer = Buffer.from(incomingHash, 'utf8');
+    const storedBuffer = Buffer.from(storedHash, 'utf8');
+
+    if (incomingBuffer.length !== storedBuffer.length) {
+      return false;
+    }
+
+    return timingSafeEqual(incomingBuffer, storedBuffer);
+  }
 
   async execute(input: {
     email: string;
@@ -20,15 +30,18 @@ export class VerifyForgotPasswordCodeUseCase {
   }): Promise<{ success: boolean; resetToken: string }> {
     const user = await this.authUserRepository.findByEmail(input.email);
 
-    if (!user || !user.isActive) {
+    if (
+      !user ||
+      !user.isActive ||
+      !user.passwordResetCodeHash ||
+      !user.passwordResetCodeExpiresAt ||
+      user.passwordResetCodeExpiresAt < new Date() ||
+      !this.verifyCodeHash(input.otpCode, user.passwordResetCodeHash)
+    ) {
       throw new UnauthorizedException('Invalid or expired reset code');
     }
 
-    await this.verifyVerificationCodeUseCase.execute({
-      purpose: VerificationPurpose.FORGOT_PASSWORD,
-      email: input.email,
-      code: input.otpCode,
-    });
+    await this.authUserRepository.clearPasswordResetCode(user.id);
 
     const resetToken = await this.tokenService.generateForgotPasswordResetToken(
       {

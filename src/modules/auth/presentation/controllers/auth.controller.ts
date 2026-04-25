@@ -6,8 +6,6 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { Roles } from '../../../../common/decorators/roles.decorator';
-import { RolesGuard } from '../../../../common/guards/roles.guard';
 import { UserRole } from '../../../../core/enums/role.enum';
 import { AuthTokensResponseDto } from '../../application/dto/auth-tokens.response.dto';
 import { ChangePasswordRequestDto } from '../../application/dto/change-password.request.dto';
@@ -153,47 +151,5 @@ export class AuthController {
     roles: UserRole[];
   } {
     return request.user;
-  }
-
-  @Get('admin-only')
-  @ApiOperation({ summary: 'Admin-only authorization check endpoint' })
-  @ApiBearerAuth()
-  @ApiOkResponse({
-    schema: {
-      example: { allowed: true, scope: 'admin' },
-    },
-  })
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
-  adminOnly(): { allowed: boolean; scope: string } {
-    return { allowed: true, scope: 'admin' };
-  }
-
-  @Get('admin-or-manager')
-  @ApiOperation({ summary: 'Admin or manager authorization check endpoint' })
-  @ApiBearerAuth()
-  @ApiOkResponse({
-    schema: {
-      example: { allowed: true, scope: 'admin-or-manager' },
-    },
-  })
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.MANAGER)
-  elevatedAccess(): { allowed: boolean; scope: string } {
-    return { allowed: true, scope: 'admin-or-manager' };
-  }
-
-  @Get('support-or-user')
-  @ApiOperation({ summary: 'Support or user authorization check endpoint' })
-  @ApiBearerAuth()
-  @ApiOkResponse({
-    schema: {
-      example: { allowed: true, scope: 'support-or-user' },
-    },
-  })
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.SUPPORT, UserRole.USER)
-  standardAccess(): { allowed: boolean; scope: string } {
-    return { allowed: true, scope: 'support-or-user' };
   }
 }

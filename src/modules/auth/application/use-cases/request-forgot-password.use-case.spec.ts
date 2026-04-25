@@ -1,9 +1,9 @@
+import { createHash } from 'crypto';
 import { UserRole } from '../../../../core/enums/role.enum';
 import { AuthUserEntity } from '../../domain/entities/auth-user.entity';
 import { IAuthUserRepository } from '../../domain/repositories/auth-user.repository';
 import { RequestForgotPasswordUseCase } from './request-forgot-password.use-case';
 import { SendPasswordResetEmailUseCase } from './send-password-reset-email.use-case';
-import { SendVerificationCodeUseCase } from '../../../verification/application/use-cases/send-verification-code.use-case';
 
 describe('RequestForgotPasswordUseCase', () => {
   const createRepo = (): jest.Mocked<IAuthUserRepository> => ({
@@ -31,68 +31,83 @@ describe('RequestForgotPasswordUseCase', () => {
       ),
     );
 
+    const sendPasswordResetEmailExecute = jest
+      .fn<
+        Promise<{ success: boolean }>,
+        [
+          {
+            email: string;
+            otpCode: string;
+            expiryMinutes: number;
+          },
+        ]
+      >()
+      .mockResolvedValue({ success: true });
+
     const sendPasswordResetEmailUseCase: Pick<
       SendPasswordResetEmailUseCase,
       'execute'
     > = {
-      execute: jest.fn().mockResolvedValue({ success: true }),
-    };
-
-    const sendVerificationCodeUseCase: Pick<
-      SendVerificationCodeUseCase,
-      'execute'
-    > = {
-      execute: jest.fn().mockResolvedValue({
-        code: '123456',
-        expiresAt: new Date(Date.now() + 10 * 60 * 1000),
-      }),
+      execute: sendPasswordResetEmailExecute,
     };
 
     const useCase = new RequestForgotPasswordUseCase(
       repo,
-      sendVerificationCodeUseCase as SendVerificationCodeUseCase,
       sendPasswordResetEmailUseCase as SendPasswordResetEmailUseCase,
     );
 
     const result = await useCase.execute({ email: 'user@mail.com' });
 
     expect(result.success).toBe(true);
-    expect(sendVerificationCodeUseCase.execute).toHaveBeenCalledWith(
-      expect.objectContaining({
-        userId: 'u1',
-        email: 'user@mail.com',
-      }),
-    );
-    expect(sendPasswordResetEmailUseCase.execute).toHaveBeenCalled();
+    expect(repo.setPasswordResetCode.mock.calls).toHaveLength(1);
+    const [savedUserId, savedCodeHash, savedExpiresAt] =
+      repo.setPasswordResetCode.mock.calls[0];
+    expect(savedUserId).toBe('u1');
+    expect(savedCodeHash).toMatch(/^[a-f0-9]{64}$/);
+    expect(savedExpiresAt).toBeInstanceOf(Date);
+    expect(sendPasswordResetEmailExecute).toHaveBeenCalled();
+
+    const emailCall = sendPasswordResetEmailExecute.mock.calls[0]?.[0] as {
+      otpCode: string;
+    };
+    const hashedOtp = createHash('sha256')
+      .update(emailCall.otpCode)
+      .digest('hex');
+    expect(hashedOtp).toBe(savedCodeHash);
   });
 
   it('returns success without email send when user is missing', async () => {
     const repo = createRepo();
     repo.findByEmail.mockResolvedValue(null);
 
+    const sendPasswordResetEmailExecute = jest
+      .fn<
+        Promise<{ success: boolean }>,
+        [
+          {
+            email: string;
+            otpCode: string;
+            expiryMinutes: number;
+          },
+        ]
+      >()
+      .mockResolvedValue({ success: true });
+
     const sendPasswordResetEmailUseCase: Pick<
       SendPasswordResetEmailUseCase,
       'execute'
     > = {
-      execute: jest.fn().mockResolvedValue({ success: true }),
-    };
-
-    const sendVerificationCodeUseCase: Pick<
-      SendVerificationCodeUseCase,
-      'execute'
-    > = {
-      execute: jest.fn(),
+      execute: sendPasswordResetEmailExecute,
     };
 
     const useCase = new RequestForgotPasswordUseCase(
       repo,
-      sendVerificationCodeUseCase as SendVerificationCodeUseCase,
       sendPasswordResetEmailUseCase as SendPasswordResetEmailUseCase,
     );
 
     const result = await useCase.execute({ email: 'unknown@mail.com' });
 
     expect(result.success).toBe(true);
-    expect(sendVerificationCodeUseCase.execute).not.toHaveBeenCalled();
+    expect(repo.setPasswordResetCode.mock.calls).toHaveLength(0);
   });
 });

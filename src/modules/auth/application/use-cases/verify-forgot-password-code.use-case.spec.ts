@@ -1,10 +1,9 @@
+import { createHash } from 'crypto';
 import { UnauthorizedException } from '@nestjs/common';
-import { VerificationPurpose } from '@prisma/client';
 import { UserRole } from '../../../../core/enums/role.enum';
 import { AuthUserEntity } from '../../domain/entities/auth-user.entity';
 import { IAuthUserRepository } from '../../domain/repositories/auth-user.repository';
 import { TokenService } from '../../infrastructure/services/token.service';
-import { VerifyVerificationCodeUseCase } from '../../../verification/application/use-cases/verify-verification-code.use-case';
 import { VerifyForgotPasswordCodeUseCase } from './verify-forgot-password-code.use-case';
 
 describe('VerifyForgotPasswordCodeUseCase', () => {
@@ -28,28 +27,22 @@ describe('VerifyForgotPasswordCodeUseCase', () => {
         [UserRole.USER],
         true,
         null,
-        null,
-        null,
+        createHash('sha256').update('123456').digest('hex'),
+        new Date(Date.now() + 5 * 60 * 1000),
       ),
     );
 
-    const verifyVerificationCodeUseCase: Pick<
-      VerifyVerificationCodeUseCase,
-      'execute'
-    > = {
-      execute: jest.fn().mockResolvedValue({ success: true }),
-    };
+    const generateForgotPasswordResetToken = jest
+      .fn<Promise<string>, [{ userId: string; email: string }]>()
+      .mockResolvedValue('generated-reset-token');
 
     const tokenService: Pick<TokenService, 'generateForgotPasswordResetToken'> =
       {
-        generateForgotPasswordResetToken: jest
-          .fn()
-          .mockResolvedValue('generated-reset-token'),
+        generateForgotPasswordResetToken,
       };
 
     const useCase = new VerifyForgotPasswordCodeUseCase(
       repo,
-      verifyVerificationCodeUseCase as VerifyVerificationCodeUseCase,
       tokenService as TokenService,
     );
 
@@ -62,14 +55,8 @@ describe('VerifyForgotPasswordCodeUseCase', () => {
       success: true,
       resetToken: 'generated-reset-token',
     });
-    expect(verifyVerificationCodeUseCase.execute).toHaveBeenCalledWith(
-      expect.objectContaining({
-        purpose: VerificationPurpose.FORGOT_PASSWORD,
-        email: 'user@mail.com',
-        code: '123456',
-      }),
-    );
-    expect(tokenService.generateForgotPasswordResetToken).toHaveBeenCalledWith({
+    expect(repo.clearPasswordResetCode.mock.calls).toEqual([['u1']]);
+    expect(generateForgotPasswordResetToken).toHaveBeenCalledWith({
       userId: 'u1',
       email: 'user@mail.com',
     });
@@ -79,12 +66,35 @@ describe('VerifyForgotPasswordCodeUseCase', () => {
     const repo = createRepo();
     repo.findByEmail.mockResolvedValue(null);
 
-    const verifyVerificationCodeUseCase: Pick<
-      VerifyVerificationCodeUseCase,
-      'execute'
-    > = {
-      execute: jest.fn(),
-    };
+    const tokenService: Pick<TokenService, 'generateForgotPasswordResetToken'> =
+      {
+        generateForgotPasswordResetToken: jest.fn(),
+      };
+
+    const useCase = new VerifyForgotPasswordCodeUseCase(
+      repo,
+      tokenService as TokenService,
+    );
+
+    await expect(
+      useCase.execute({ email: 'none@mail.com', otpCode: '123456' }),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
+  });
+
+  it('throws unauthorized for invalid code', async () => {
+    const repo = createRepo();
+    repo.findByEmail.mockResolvedValue(
+      new AuthUserEntity(
+        'u1',
+        'user@mail.com',
+        'hashed-password',
+        [UserRole.USER],
+        true,
+        null,
+        createHash('sha256').update('654321').digest('hex'),
+        new Date(Date.now() + 5 * 60 * 1000),
+      ),
+    );
 
     const tokenService: Pick<TokenService, 'generateForgotPasswordResetToken'> =
       {
@@ -93,12 +103,11 @@ describe('VerifyForgotPasswordCodeUseCase', () => {
 
     const useCase = new VerifyForgotPasswordCodeUseCase(
       repo,
-      verifyVerificationCodeUseCase as VerifyVerificationCodeUseCase,
       tokenService as TokenService,
     );
 
     await expect(
-      useCase.execute({ email: 'none@mail.com', otpCode: '123456' }),
+      useCase.execute({ email: 'user@mail.com', otpCode: '123456' }),
     ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 });

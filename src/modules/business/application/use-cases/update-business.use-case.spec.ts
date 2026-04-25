@@ -3,7 +3,6 @@ import {
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
-import { UserRole } from '../../../../core/enums/role.enum';
 import { BusinessEntity } from '../../domain/entities/business.entity';
 import { IBusinessRepository } from '../../domain/repositories/business.repository';
 import { UpdateBusinessUseCase } from './update-business.use-case';
@@ -57,7 +56,6 @@ describe('UpdateBusinessUseCase', () => {
     const result = await useCase.execute({
       businessId: 'b1',
       actorUserId: 'u1',
-      actorRoles: [UserRole.USER],
       name: 'Updated Name',
       slug: 'updated-name',
       industry: 'Restaurant',
@@ -106,7 +104,6 @@ describe('UpdateBusinessUseCase', () => {
       useCase.execute({
         businessId: 'b1',
         actorUserId: 'u2',
-        actorRoles: [UserRole.USER],
         name: 'New Name',
       }),
     ).rejects.toBeInstanceOf(ForbiddenException);
@@ -160,7 +157,6 @@ describe('UpdateBusinessUseCase', () => {
       useCase.execute({
         businessId: 'b1',
         actorUserId: 'u1',
-        actorRoles: [UserRole.USER],
         slug: 'updated-name',
       }),
     ).rejects.toBeInstanceOf(ConflictException);
@@ -182,7 +178,6 @@ describe('UpdateBusinessUseCase', () => {
       useCase.execute({
         businessId: 'missing',
         actorUserId: 'u1',
-        actorRoles: [UserRole.ADMIN],
         name: 'New Name',
       }),
     ).rejects.toBeInstanceOf(NotFoundException);

@@ -20,12 +20,11 @@ import { AUTH_MAIL_SENDER } from './application/interfaces/mail-sender.port';
 import { AUTH_SMS_SENDER } from './application/interfaces/sms-sender.port';
 import { AuthMailSenderAdapter } from './infrastructure/services/auth-mail-sender.adapter';
 import { AuthSmsSenderAdapter } from './infrastructure/services/auth-sms-sender.adapter';
-import { VerificationModule } from '../verification/verification.module';
 import { BUSINESS_REPOSITORY } from '../business/domain/repositories/business.repository';
 import { PrismaBusinessRepository } from '../business/infrastructure/repositories/prisma-business.repository';
 
 @Module({
-  imports: [PassportModule, JwtModule.register({}), VerificationModule],
+  imports: [PassportModule, JwtModule.register({})],
   controllers: [AuthController],
   providers: [
     RegisterUseCase,

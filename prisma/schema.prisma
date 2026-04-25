@@ -13,26 +13,6 @@ enum UserRole {
   USER
 }
 
-enum NotificationChannel {
-  IN_APP
-  EMAIL
-  SMS
-}
-
-enum VerificationPurpose {
-  FORGOT_PASSWORD
-  EMAIL_VERIFICATION
-  PHONE_VERIFICATION
-  ADMIN_LOGIN_OTP
-}
-
-enum VerificationStatus {
-  PENDING
-  VERIFIED
-  EXPIRED
-  CANCELED
-}
-
 model User {
   id                         String     @id @default(uuid())
   fullName                   String?
@@ -47,10 +27,7 @@ model User {
   updatedAt                  DateTime   @updatedAt
 
   createdBusinesses Business[]          @relation("BusinessOwner")
-  notifications     Notification[]
   payments          PaymentTransaction[]
-  verificationCodes VerificationCode[]
-  adminAuditLogs    AdminAuditLog[]     @relation("AdminAuditActor")
 }
 
 model Business {
@@ -68,8 +45,6 @@ model Business {
 
   ownerUser       User                 @relation("BusinessOwner", fields: [ownerUserId], references: [id])
   payments        PaymentTransaction[]
-  notifications   Notification[]
-  adminAuditLogs  AdminAuditLog[]
 
   @@index([ownerUserId])
   @@index([isActive])
@@ -94,66 +69,4 @@ model PaymentTransaction {
 
   @@index([businessId, createdAt])
   @@index([userId])
-}
-
-model Notification {
-  id         String              @id @default(uuid())
-  userId     String
-  businessId String?
-  channel    NotificationChannel
-  title      String
-  message    String
-  isRead     Boolean             @default(false)
-  sentAt     DateTime            @default(now())
-  readAt     DateTime?
-
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  business Business? @relation(fields: [businessId], references: [id], onDelete: SetNull)
-
-  @@index([userId, isRead])
-  @@index([businessId, sentAt])
-}
-
-model VerificationCode {
-  id          String              @id @default(uuid())
-  userId      String?
-  email       String?
-  phoneNumber String?
-  purpose     VerificationPurpose
-  channel     NotificationChannel
-  codeHash    String
-  status      VerificationStatus  @default(PENDING)
-  expiresAt   DateTime
-  verifiedAt  DateTime?
-  consumedAt  DateTime?
-  attempts    Int                 @default(0)
-  maxAttempts Int                 @default(5)
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
-
-  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  @@index([email, purpose, status])
-  @@index([phoneNumber, purpose, status])
-  @@index([expiresAt])
-}
-
-model AdminAuditLog {
-  id          String   @id @default(uuid())
-  actorUserId String
-  businessId  String?
-  action      String
-  targetType  String?
-  targetId    String?
-  ipAddress   String?
-  userAgent   String?
-  metadata    Json?
-  createdAt   DateTime @default(now())
-
-  actorUser User      @relation("AdminAuditActor", fields: [actorUserId], references: [id], onDelete: Cascade)
-  business  Business? @relation(fields: [businessId], references: [id], onDelete: SetNull)
-
-  @@index([actorUserId, createdAt])
-  @@index([businessId, createdAt])
-  @@index([action])
 }

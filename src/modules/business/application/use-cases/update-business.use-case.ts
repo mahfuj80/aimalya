@@ -6,7 +6,6 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { UserRole } from '../../../../core/enums/role.enum';
 import type { BusinessEntity } from '../../domain/entities/business.entity';
 import { BUSINESS_REPOSITORY } from '../../domain/repositories/business.repository';
 import type { IBusinessRepository } from '../../domain/repositories/business.repository';
@@ -14,7 +13,6 @@ import type { IBusinessRepository } from '../../domain/repositories/business.rep
 type UpdateBusinessInput = {
   businessId: string;
   actorUserId: string;
-  actorRoles: UserRole[];
   name?: string;
   slug?: string;
   industry?: string;
@@ -48,10 +46,9 @@ export class UpdateBusinessUseCase {
       throw new NotFoundException('Business not found');
     }
 
-    const isAdmin = input.actorRoles.includes(UserRole.ADMIN);
     const isOwner = current.ownerUserId === input.actorUserId;
 
-    if (!isAdmin && !isOwner) {
+    if (!isOwner) {
       throw new ForbiddenException('You cannot update this business');
     }
 
