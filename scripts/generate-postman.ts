@@ -1,8 +1,11 @@
+// @ts-nocheck
+// Included directly to avoid "file not found by the project service" parsings
+// errors in editors where this script isn't listed in tsconfig.json.
 import { parse as parseEnv } from 'dotenv';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-const SWAGGER_JSON_URL = 'http://localhost:3000/api/docs-json';
+const SWAGGER_JSON_URL = 'http://localhost:3001/api/docs-json';
 const FETCH_FAILURE_MESSAGE =
   'Error: Could not reach the Swagger JSON endpoint. Ensure the NestJS server is running at http://localhost:3001.';
 const PROJECT_ROOT = process.cwd();
