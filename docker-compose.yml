@@ -10,7 +10,6 @@ services:
     environment:
       NODE_ENV: development
       DATABASE_URL: postgresql://aimalya:aimalya_dev_password@db:5432/aimalya?schema=public
-      REDIS_URL: redis://redis:6379
     env_file:
       - .env
     volumes:
@@ -20,8 +19,6 @@ services:
     command: sh -c "npx prisma generate --schema prisma/schema.prisma && npx prisma db push --schema prisma/schema.prisma --url \"$$DATABASE_URL\" && npm run start:dev"
     depends_on:
       db:
-        condition: service_healthy
-      redis:
         condition: service_healthy
     networks:
       - aimalya-network
@@ -47,25 +44,8 @@ services:
       timeout: 5s
       retries: 5
 
-  redis:
-    image: redis:7-alpine
-    container_name: aimalya-redis
-    ports:
-      - '6379:6379'
-    volumes:
-      - redis_data:/data
-    networks:
-      - aimalya-network
-    restart: unless-stopped
-    healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
 volumes:
-  postgres_data:
-  redis_data:
+  postgres_data: # This is the "Safe Box" for your database
 
 networks:
   aimalya-network:
